@@ -18,6 +18,10 @@ import { AlienDJ } from './compositions/AlienDJ';
 import { CyberDrummer } from './compositions/CyberDrummer';
 import { VoodooShaman } from './compositions/VoodooShaman';
 import { PepeStormFlyer } from './compositions/PepeStormFlyer';
+import { CybercoreBreach } from './compositions/CybercoreBreach';
+import { UfoAttacksScene } from './components/3D/UfoAttacksScene';
+import { UfoCityAttack } from './compositions/UfoCityAttack';
+import { RobotApocalypse } from './compositions/RobotApocalypse';
 
 const FPS = 30;
 
@@ -69,6 +73,26 @@ export const RemotionRoot: React.FC = () => (
     <Composition
       id="PepeStormFlyer"
       component={PepeStormFlyer}
+      {...S}
+    />
+    <Composition
+      id="CybercoreBreach"
+      component={CybercoreBreach}
+      {...S}
+    />
+    <Composition
+      id="UfoAttacks"
+      component={UfoAttacksScene}
+      {...S}
+    />
+    <Composition
+      id="UfoCityAttack"
+      component={UfoCityAttack}
+      {...S}
+    />
+    <Composition
+      id="RobotApocalypse"
+      component={RobotApocalypse}
       {...S}
     />
   </>
