@@ -240,8 +240,11 @@ export const CommandoScene: React.FC = () => {
                         }
                     }
 
-                    const typeRandom = sr(`type-${f}-${i}`);
-                    const type: 'type_1' | 'type_2' | 'type_3' = typeRandom > 0.66 ? 'type_3' : (typeRandom > 0.33 ? 'type_2' : 'type_1');
+                    const type: 'type_1' | 'type_2' | 'type_3' =
+                        i === 0 ? 'type_1' :
+                            (i === 1 ? 'type_2' :
+                                (i === 2 ? 'type_3' :
+                                    (sr(`type-${f}-${i}`) > 0.66 ? 'type_3' : (sr(`type-${f}-${i}`) > 0.33 ? 'type_2' : 'type_1'))));
 
                     enemies.push({
                         id: eId++, type, startF: f, basePath, finalPath: [...basePath],
@@ -368,31 +371,54 @@ export const CommandoScene: React.FC = () => {
         };
     }, [audioData, fps, width, durationInFrames]);
 
-    const WorldObjectSprite = ({ obj }: { obj: WorldObject }) => (
-        <div style={{ position: 'absolute', left: obj.x, top: obj.y - obj.h, width: obj.w, height: obj.h, zIndex: Math.floor(obj.y) }}>
-            {obj.type === 'crate' && <svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%' }}><rect width="100" height="100" fill="#5d4037" /><line x1="0" y1="0" x2="100" y2="100" stroke="#3e2723" strokeWidth="4" /><line x1="100" y1="0" x2="0" y2="100" stroke="#3e2723" strokeWidth="4" /></svg>}
-            {obj.type === 'bush' && <svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%' }}><circle cx="50" cy="50" r="45" fill="#2e7d32" /><circle cx="30" cy="40" r="25" fill="#388e3c" /></svg>}
-            {obj.type === 'tower' && <svg viewBox="0 0 100 250" style={{ width: '100%', height: '100%' }}><rect x="10" y="50" width="80" height="200" fill="#455a64" /><rect x="25" y="70" width="50" height="40" fill="#90a4ae" /></svg>}
-            {obj.type === 'tree' && <svg viewBox="0 0 100 200" style={{ width: '100%', height: '100%' }}><rect x="40" y="140" width="20" height="60" fill="#4e342e" /><path d="M50 20 L10 150 L90 150 Z" fill="#1b5e20" /><path d="M50 50 L20 120 L80 120 Z" fill="#2e7d32" /></svg>}
-            {obj.type === 'stone' && <svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%' }}><path d="M10 90 Q15 20 50 10 Q85 20 90 90 Z" fill="#616161" /><path d="M30 40 Q40 30 50 40" stroke="#424242" fill="none" /></svg>}
-        </div>
-    );
+    // --- Skinning System (Data-Driven) ---
+    // Import configuration from settings/Commando.json
+    // If field is empty, fallback to bot-generated SVGs
+    // Note: We use a simple object for local simulation, in production this would be an import
+    const settings = {
+        hero: { skin: "" },
+        enemies: { type_1: "", type_2: "", type_3: "" },
+        objects: { crate: "", bush: "", tower: "", tree: "", stone: "" },
+        bullets: { hero: "", enemy: "" },
+        landscape: { background: "" }
+    };
 
-    const CommandoSprite = ({ x, y, firing }: { x: number; y: number; firing: boolean }) => (
-        <div style={{ position: 'absolute', left: x - 60, top: y - 140, width: 120, height: 140, zIndex: Math.floor(y) }}>
-            <svg viewBox="0 0 100 120" style={{ width: '100%', height: '100%', filter: 'drop-shadow(8px 8px 0px rgba(0,0,0,0.4))' }}>
-                <path d="M35 70 L25 115 L45 115 L50 85 L55 115 L75 115 L65 70 Z" fill="#3d4c1d" />
-                <rect x="30" y="30" width="40" height="45" fill="#8b7355" />
-                <rect x="38" y="5" width="28" height="28" fill="#f4c2c2" rx="4" />
-                <path d="M45 40 L90 40 L90 55 L45 55 Z" fill="#f4c2c2" />
-                <rect x="70" y="32" width="45" height="15" fill="#222" />
-                {firing && <g transform="translate(115, 39)"><circle r="20" fill="yellow" opacity={0.6}><animate attributeName="r" values="15;25;15" dur="0.1s" repeatCount="indefinite" /></circle></g>}
-            </svg>
-        </div>
-    );
+    const WorldObjectSprite = ({ obj }: { obj: WorldObject }) => {
+        const skin = settings.objects[obj.type];
+        if (skin) return <img src={skin} style={{ position: 'absolute', left: obj.x, top: obj.y - obj.h, width: obj.w, height: obj.h, zIndex: Math.floor(obj.y) }} alt={obj.type} />;
+
+        return (
+            <div style={{ position: 'absolute', left: obj.x, top: obj.y - obj.h, width: obj.w, height: obj.h, zIndex: Math.floor(obj.y) }}>
+                {obj.type === 'crate' && <svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%' }}><rect width="100" height="100" fill="#5d4037" /><line x1="0" y1="0" x2="100" y2="100" stroke="#3e2723" strokeWidth="4" /><line x1="100" y1="0" x2="0" y2="100" stroke="#3e2723" strokeWidth="4" /></svg>}
+                {obj.type === 'bush' && <svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%' }}><circle cx="50" cy="50" r="45" fill="#2e7d32" /><circle cx="30" cy="40" r="25" fill="#388e3c" /></svg>}
+                {obj.type === 'tower' && <svg viewBox="0 0 100 250" style={{ width: '100%', height: '100%' }}><rect x="10" y="50" width="80" height="200" fill="#455a64" /><rect x="25" y="70" width="50" height="40" fill="#90a4ae" /></svg>}
+                {obj.type === 'tree' && <svg viewBox="0 0 100 200" style={{ width: '100%', height: '100%' }}><rect x="40" y="140" width="20" height="60" fill="#4e342e" /><path d="M50 20 L10 150 L90 150 Z" fill="#1b5e20" /><path d="M50 50 L20 120 L80 120 Z" fill="#2e7d32" /></svg>}
+                {obj.type === 'stone' && <svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%' }}><path d="M10 90 Q15 20 50 10 Q85 20 90 90 Z" fill="#616161" /><path d="M30 40 Q40 30 50 40" stroke="#424242" fill="none" /></svg>}
+            </div>
+        );
+    };
+
+    const CommandoSprite = ({ x, y, firing }: { x: number; y: number; firing: boolean }) => {
+        if (settings.hero.skin) return <img src={settings.hero.skin} style={{ position: 'absolute', left: x - 60, top: y - 140, width: 120, height: 140, zIndex: Math.floor(y) }} alt="hero" />;
+
+        return (
+            <div style={{ position: 'absolute', left: x - 60, top: y - 140, width: 120, height: 140, zIndex: Math.floor(y) }}>
+                <svg viewBox="0 0 100 120" style={{ width: '100%', height: '100%', filter: 'drop-shadow(8px 8px 0px rgba(0,0,0,0.4))' }}>
+                    <path d="M35 70 L25 115 L45 115 L50 85 L55 115 L75 115 L65 70 Z" fill="#3d4c1d" />
+                    <rect x="30" y="30" width="40" height="45" fill="#8b7355" />
+                    <rect x="38" y="5" width="28" height="28" fill="#f4c2c2" rx="4" />
+                    <path d="M45 40 L90 40 L90 55 L45 55 Z" fill="#f4c2c2" />
+                    <rect x="70" y="32" width="45" height="15" fill="#222" />
+                    {firing && <g transform="translate(115, 39)"><circle r="20" fill="yellow" opacity={0.6}><animate attributeName="r" values="15;25;15" dur="0.1s" repeatCount="indefinite" /></circle></g>}
+                </svg>
+            </div>
+        );
+    };
 
     const ContraSprite = ({ x, y, dead, type }: { x: number; y: number; dead: boolean; type: 'type_1' | 'type_2' | 'type_3' }) => {
         if (dead) return null; // Instant shatter
+        if (settings.enemies[type]) return <img src={settings.enemies[type]} style={{ position: 'absolute', left: x - 50, top: y - 130, width: 100, height: 130, zIndex: Math.floor(y), transform: 'scaleX(-1)' }} alt={type} />;
+
         const uniform = type === 'type_3' ? '#ef6c00' : (type === 'type_2' ? '#1a237e' : '#800000');
         const helmet = type === 'type_3' ? '#4e342e' : (type === 'type_2' ? '#0d47a1' : '#222');
         return (
@@ -406,6 +432,16 @@ export const CommandoScene: React.FC = () => {
                 </svg>
             </div>
         );
+    };
+
+    const CommandoBullet = ({ bx, by }: { bx: number, by: number }) => {
+        if (settings.bullets.hero) return <img src={settings.bullets.hero} style={{ position: 'absolute', left: bx, top: by, width: 25, height: 6, zIndex: 1000 }} alt="bullet" />;
+        return <div style={{ position: 'absolute', left: bx, top: by, width: 25, height: 6, background: 'yellow', boxShadow: '0 0 8px yellow', borderRadius: 2, zIndex: 1000 }} />;
+    };
+
+    const EnemyBullet = ({ bx, by }: { bx: number, by: number }) => {
+        if (settings.bullets.enemy) return <img src={settings.bullets.enemy} style={{ position: 'absolute', left: bx, top: by, width: 20, height: 12, zIndex: 1001 }} alt="ebullet" />;
+        return <div style={{ position: 'absolute', left: bx, top: by, width: 20, height: 12, background: '#ff3333', borderRadius: '50%', boxShadow: '0 0 10px #ff0000', zIndex: 1001 }} />;
     };
 
     if (!audioData || !engine) return <AbsoluteFill style={{ backgroundColor: '#000' }} />;
@@ -423,9 +459,9 @@ export const CommandoScene: React.FC = () => {
     return (
         <AbsoluteFill style={{ backgroundColor: '#1a1d1a', overflow: 'hidden' }}>
             <Audio src={audioUrl} />
-            <AbsoluteFill style={{ background: 'linear-gradient(180deg, #0e121a 0%, #2a3b2a 100%)' }} />
+            <AbsoluteFill style={settings.landscape.background ? { backgroundImage: `url(${settings.landscape.background})`, backgroundSize: 'cover' } : { background: 'linear-gradient(180deg, #0e121a 0%, #2a3b2a 100%)' }} />
             <div style={{ fontSize: 40, position: 'absolute', top: 40, left: 60, color: '#fff', ...pixelFont, zIndex: 3000 }}>
-                SCORE: {String(explosions.filter(e => e.frame <= curF && e.type !== 'spark').length * 150).padStart(6, '0')}
+                SCORE: {String(scoreValue).padStart(6, '0')}
             </div>
             {worldObjects.map(o => <WorldObjectSprite key={o.id} obj={o} />)}
             <CommandoSprite x={cx} y={cy} firing={isFiring} />
@@ -435,9 +471,9 @@ export const CommandoScene: React.FC = () => {
                 const t = b.hitF ? (curF - b.startF) / (b.hitF - b.startF) : 0;
                 const bx = b.startX + ((b.hitX ?? b.startX) - b.startX) * t;
                 const by = b.startY + ((b.hitY ?? b.startY) - b.startY) * t;
-                return <div key={b.id} style={{ position: 'absolute', left: bx, top: by, width: 25, height: 6, background: 'yellow', zIndex: 1000 }} />;
+                return <CommandoBullet key={b.id} bx={bx} by={by} />;
             })}
-            {enemyBullets.map(b => (curF >= b.startF && (b.hitF === null || curF <= b.hitF)) && <div key={b.id} style={{ position: 'absolute', left: b.startX - (curF - b.startF) * BULLET_SPEED, top: b.startY, width: 30, height: 10, background: '#ff3333', zIndex: 1001 }} />)}
+            {enemyBullets.map(b => (curF >= b.startF && (b.hitF === null || curF <= b.hitF)) && <EnemyBullet key={b.id} bx={b.startX - (curF - b.startF) * BULLET_SPEED} by={b.startY} />)}
             {engine.explosions.map((exp, idx) => {
                 const age = curF - exp.frame;
                 const isSpark = exp.type === 'spark';

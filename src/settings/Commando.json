@@ -1,0 +1,26 @@
+{
+    "hero": {
+        "skin": "",
+        "muzzleFlash": ""
+    },
+    "enemies": {
+        "type_1": "",
+        "type_2": "",
+        "type_3": ""
+    },
+    "objects": {
+        "crate": "",
+        "bush": "",
+        "tower": "",
+        "tree": "",
+        "stone": ""
+    },
+    "bullets": {
+        "hero": "",
+        "enemy": ""
+    },
+    "landscape": {
+        "background": "",
+        "overlay": ""
+    }
+}
