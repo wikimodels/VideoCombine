@@ -33,15 +33,15 @@ export const CybercoreBreach: React.FC = () => {
     const ufos = useMemo(() => {
         return [
             // Top Left (Green)
-            { id: 1, color: '#33ff00', hullColor: '#303038', scale: 1.65, xOffset: -380, yOffset: -450, driftSpeed: 0.02, phase: 0, brightness: 1.0 },
+            { id: 1, color: '#33ff00', hullColor: '#4d4d55', scale: 1.65, xOffset: -380, yOffset: -450, driftSpeed: 0.02, phase: 0, brightness: 1.0 },
             // Top Right (Purple)
-            { id: 2, color: '#bf00ff', hullColor: '#2b2b35', scale: 1.43, xOffset: 380, yOffset: -500, driftSpeed: 0.03, phase: 2, brightness: 1.0 },
+            { id: 2, color: '#bf00ff', hullColor: '#464652', scale: 1.43, xOffset: 380, yOffset: -500, driftSpeed: 0.03, phase: 2, brightness: 1.0 },
             // Bottom Left (Orange)
-            { id: 3, color: '#ff8800', hullColor: '#282830', scale: 1.21, xOffset: -380, yOffset: -50, driftSpeed: 0.015, phase: 4, brightness: 1.0 },
+            { id: 3, color: '#ff8800', hullColor: '#43434d', scale: 1.21, xOffset: -380, yOffset: -50, driftSpeed: 0.015, phase: 4, brightness: 1.0 },
             // Bottom Right (Blue)
-            { id: 4, color: '#00d4ff', hullColor: '#25252d', scale: 1.54, xOffset: 380, yOffset: -100, driftSpeed: 0.025, phase: 6, brightness: 1.0 },
-            // Top Center (Red) - Added per user request
-            { id: 5, color: '#ff0033', hullColor: '#302828', scale: 1.76, xOffset: 0, yOffset: -650, driftSpeed: 0.018, phase: 8, brightness: 1.3 },
+            { id: 4, color: '#00d4ff', hullColor: '#3f3f4a', scale: 1.54, xOffset: 380, yOffset: -100, driftSpeed: 0.025, phase: 6, brightness: 1.0 },
+            // Top Center (Red)
+            { id: 5, color: '#ff0033', hullColor: '#4d4444', scale: 1.76, xOffset: 0, yOffset: -650, driftSpeed: 0.018, phase: 8, brightness: 1.3 },
         ];
     }, []);
 
@@ -121,16 +121,16 @@ export const CybercoreBreach: React.FC = () => {
             {/* The Conical Nozzle Shell */}
             <path
                 d={`M ${nx - width * 0.3} ${ny - height} L ${nx + width * 0.3} ${ny - height} L ${nx + width * 0.5} ${ny} L ${nx - width * 0.5} ${ny} Z`}
-                fill="#050505" stroke="#1c1c22" strokeWidth="8" strokeLinejoin="round"
+                fill="#252525" stroke="#4f4f55" strokeWidth="8" strokeLinejoin="round"
             />
             {/* Metallic heat rings across the cone */}
-            <path d={`M ${nx - width * 0.35} ${ny - height * 0.6} L ${nx + width * 0.35} ${ny - height * 0.6}`} stroke="#111" strokeWidth="10" />
-            <path d={`M ${nx - width * 0.43} ${ny - height * 0.2} L ${nx + width * 0.43} ${ny - height * 0.2}`} stroke="#1a1a1c" strokeWidth="6" />
+            <path d={`M ${nx - width * 0.35} ${ny - height * 0.6} L ${nx + width * 0.35} ${ny - height * 0.6}`} stroke="#333" strokeWidth="10" />
+            <path d={`M ${nx - width * 0.43} ${ny - height * 0.2} L ${nx + width * 0.43} ${ny - height * 0.2}`} stroke="#424244" strokeWidth="6" />
 
             {/* Vertical Struts */}
             {Array.from({ length: 5 }).map((_, i) => {
                 const px = nx - width * 0.35 + (i * width * 0.7 / 4);
-                return <line key={`bolt-${i}`} x1={px} y1={ny - height * 0.9} x2={px} y2={ny - height * 0.1} stroke="#222" strokeWidth="4" />;
+                return <line key={`bolt-${i}`} x1={px} y1={ny - height * 0.9} x2={px} y2={ny - height * 0.1} stroke="#555" strokeWidth="4" />;
             })}
         </g>
     );
@@ -277,13 +277,13 @@ export const CybercoreBreach: React.FC = () => {
                         <defs>
                             {/* Much brighter, silver metallic gradients */}
                             <linearGradient id="hullGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                                <stop offset="0%" stopColor="#4a4a58" />
-                                <stop offset="60%" stopColor="#2e2e38" />
-                                <stop offset="100%" stopColor="#1a1a22" />
+                                <stop offset="0%" stopColor="#676777" />
+                                <stop offset="60%" stopColor="#4a4a55" />
+                                <stop offset="100%" stopColor="#353540" />
                             </linearGradient>
                             <linearGradient id="wingGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                                <stop offset="0%" stopColor="#3d3d4a" />
-                                <stop offset="100%" stopColor="#22222d" />
+                                <stop offset="0%" stopColor="#5d5d6d" />
+                                <stop offset="100%" stopColor="#41414e" />
                             </linearGradient>
                         </defs>
 
@@ -296,18 +296,18 @@ export const CybercoreBreach: React.FC = () => {
                             />
 
                             {/* Central Core details */}
-                            <line x1={cx} y1={mainY - mainHeight - 650} x2={cx} y2={mainY - mainHeight} stroke="#111" strokeWidth="20" />
-                            <line x1={cx} y1={mainY - mainHeight - 650} x2={cx} y2={mainY - mainHeight} stroke="#1a1a1c" strokeWidth="4" />
-                            <path d={`M ${cx - 120} ${mainY - 250} L ${cx} ${mainY - 200} L ${cx + 120} ${mainY - 250}`} fill="none" stroke="#111" strokeWidth="15" />
+                            <line x1={cx} y1={mainY - mainHeight - 650} x2={cx} y2={mainY - mainHeight} stroke="#333" strokeWidth="20" />
+                            <line x1={cx} y1={mainY - mainHeight - 650} x2={cx} y2={mainY - mainHeight} stroke="#424244" strokeWidth="4" />
+                            <path d={`M ${cx - 120} ${mainY - 250} L ${cx} ${mainY - 200} L ${cx + 120} ${mainY - 250}`} fill="none" stroke="#222" strokeWidth="15" />
 
                             {/* Top Stabilizer Fins (Moved down and attached to fuselage) */}
                             <path
                                 d={`M ${cx - 100} ${mainY - mainHeight - 350} L ${cx - 300} ${mainY - mainHeight + 50} L ${cx - 200} ${mainY - mainHeight + 100} L ${cx - 135} ${mainY - mainHeight - 150} Z`}
-                                fill="url(#wingGrad)" stroke="#1a1a20" strokeWidth="6" strokeLinejoin="round"
+                                fill="url(#wingGrad)" stroke="#303038" strokeWidth="6" strokeLinejoin="round"
                             />
                             <path
                                 d={`M ${cx + 100} ${mainY - mainHeight - 350} L ${cx + 300} ${mainY - mainHeight + 50} L ${cx + 200} ${mainY - mainHeight + 100} L ${cx + 135} ${mainY - mainHeight - 150} Z`}
-                                fill="url(#wingGrad)" stroke="#1a1a20" strokeWidth="6" strokeLinejoin="round"
+                                fill="url(#wingGrad)" stroke="#303038" strokeWidth="6" strokeLinejoin="round"
                             />
 
                             {/* Side Boosters (Shorter parabolic cones) */}

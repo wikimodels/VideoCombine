@@ -173,8 +173,9 @@ export const UfoCityAttack: React.FC = () => {
     const { fps, width, height } = useVideoConfig();
     const audioFile = staticFile('track.mp3');
     const audioData = useAudioData(audioFile);
+    const skyBackground = 'linear-gradient(to bottom, #060618 0%, #1a0633 45%, #2a0a4d 100%)';
 
-    if (!audioData) return <AbsoluteFill style={{ background: '#06061a' }} />;
+    if (!audioData) return <AbsoluteFill style={{ background: skyBackground }} />;
 
     const viz = visualizeAudio({ fps, frame, audioData, numberOfSamples: 64 });
     const bass = Math.min((viz[0] + viz[1] + viz[2]) / 3 * 2.8, 1);
@@ -186,8 +187,10 @@ export const UfoCityAttack: React.FC = () => {
     const ufoY = (i: number) => H * 0.16 + Math.sin(frame * 0.045 + i * 1.4) * 50 - (firing ? bass * 25 : 0);
 
     return (
-        <AbsoluteFill style={{ overflow: 'hidden' }}>
-            <TwinklingStarfield />
+        <AbsoluteFill style={{ background: skyBackground, overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', width: '100%', height: '100%', opacity: 0.6 }}>
+                <TwinklingStarfield />
+            </div>
             <Audio src={audioFile} />
 
             <svg
@@ -204,6 +207,20 @@ export const UfoCityAttack: React.FC = () => {
                         <feGaussianBlur stdDeviation="10" result="b" />
                         <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
                     </filter>
+                </defs>
+
+                {/* ── Atmospheric Horizon Haze ── */}
+                <ellipse
+                    cx={W / 2} cy={GROUND_Y}
+                    rx={W * 0.8} ry={300}
+                    fill="url(#hazeGrad)" opacity={0.4 + bass * 0.2}
+                    style={{ filter: 'blur(60px)' }}
+                />
+                <defs>
+                    <radialGradient id="hazeGrad" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stopColor="#4a0082" />
+                        <stop offset="100%" stopColor="transparent" />
+                    </radialGradient>
                 </defs>
 
                 {/* ── Buildings (shake on strike) ── */}

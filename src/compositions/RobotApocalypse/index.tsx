@@ -6,19 +6,19 @@ import { TwinklingStarfield } from '../../components/TwinklingStarfield';
 // ─── Scene constants ────────────────────────────────────────────────────────────
 const W = 1080;
 const H = 1920;
-const GROUND_Y = H * 0.80;
+const GROUND_Y = H * 0.87;
 const FIRE_Y = H * 0.84;
 const sr = (seed: number) => Math.abs(Math.sin(seed * 127.1 + 97.3));
 
 // ─── Buildings ──────────────────────────────────────────────────────────────────
 const BUILDINGS = [
-    { x: -30, w: 170, h: 220, color: '#1e1e2d' },
-    { x: 135, w: 130, h: 310, color: '#181824' },
-    { x: 260, w: 190, h: 260, color: '#1e1e2d' },
-    { x: 445, w: 150, h: 360, color: '#151520' },
-    { x: 590, w: 210, h: 275, color: '#1e1e2d' },
-    { x: 795, w: 140, h: 330, color: '#181824' },
-    { x: 930, w: 175, h: 240, color: '#1e1e2d' },
+    { x: -30, w: 170, h: 220 + 135, color: '#1e1e2d' },
+    { x: 135, w: 130, h: 310 + 135, color: '#181824' },
+    { x: 260, w: 190, h: 260 + 135, color: '#1e1e2d' },
+    { x: 445, w: 150, h: 360 + 135, color: '#151520' },
+    { x: 590, w: 210, h: 275 + 135, color: '#1e1e2d' },
+    { x: 795, w: 140, h: 330 + 135, color: '#181824' },
+    { x: 930, w: 175, h: 240 + 135, color: '#1e1e2d' },
 ];
 
 const WINDOWS = BUILDINGS.map((b) => {
@@ -116,24 +116,24 @@ const Runner: React.FC<{
 // ─── Runners data — dense clusters ─────────────────────────────────────────────
 const RUNNERS = [
     // Cluster A — tight group left side
-    { startX: -60, speed: 5.2, sc: 0.55, skin: '#ffe0b2', shirt: '#ff1744', phase: 0.0 },
-    { startX: -130, speed: 4.8, sc: 0.52, skin: '#fff9c4', shirt: '#ff9100', phase: 0.4 },
-    { startX: -195, speed: 5.5, sc: 0.58, skin: '#ffccbc', shirt: '#e040fb', phase: 0.8 },
+    { startX: -60, speed: 5.2, sc: 0.55 * 1.15, skin: '#ffe0b2', shirt: '#ff1744', phase: 0.0 },
+    { startX: -130, speed: 4.8, sc: 0.52 * 1.15, skin: '#fff9c4', shirt: '#ff9100', phase: 0.4 },
+    { startX: -195, speed: 5.5, sc: 0.58 * 1.15, skin: '#ffccbc', shirt: '#e040fb', phase: 0.8 },
 
     // Cluster B — middle
-    { startX: -450, speed: 4.4, sc: 0.53, skin: '#ffe0b2', shirt: '#00e5ff', phase: 1.1 },
-    { startX: -520, speed: 4.9, sc: 0.56, skin: '#fff9c4', shirt: '#76ff03', phase: 1.5 },
-    { startX: -590, speed: 4.2, sc: 0.50, skin: '#ffccbc', shirt: '#ff1744', phase: 1.9 },
+    { startX: -450, speed: 4.4, sc: 0.53 * 1.15, skin: '#ffe0b2', shirt: '#00e5ff', phase: 1.1 },
+    { startX: -520, speed: 4.9, sc: 0.56 * 1.15, skin: '#fff9c4', shirt: '#76ff03', phase: 1.5 },
+    { startX: -590, speed: 4.2, sc: 0.50 * 1.15, skin: '#ffccbc', shirt: '#ff1744', phase: 1.9 },
 
     // Cluster C — right side, faster
-    { startX: -820, speed: 5.8, sc: 0.54, skin: '#ffe0b2', shirt: '#ff9100', phase: 2.3 },
-    { startX: -890, speed: 6.1, sc: 0.57, skin: '#fff9c4', shirt: '#e040fb', phase: 2.7 },
-    { startX: -960, speed: 5.4, sc: 0.51, skin: '#ffccbc', shirt: '#00e5ff', phase: 3.1 },
+    { startX: -820, speed: 5.8, sc: 0.54 * 1.15, skin: '#ffe0b2', shirt: '#ff9100', phase: 2.3 },
+    { startX: -890, speed: 6.1, sc: 0.57 * 1.15, skin: '#fff9c4', shirt: '#e040fb', phase: 2.7 },
+    { startX: -960, speed: 5.4, sc: 0.51 * 1.15, skin: '#ffccbc', shirt: '#00e5ff', phase: 3.1 },
 
     // Stragglers
-    { startX: -1250, speed: 4.0, sc: 0.60, skin: '#ffe0b2', shirt: '#76ff03', phase: 0.6 },
-    { startX: -1400, speed: 4.7, sc: 0.53, skin: '#fff9c4', shirt: '#ff1744', phase: 1.3 },
-    { startX: -1600, speed: 5.0, sc: 0.55, skin: '#ffccbc', shirt: '#ff9100', phase: 2.0 },
+    { startX: -1250, speed: 4.0, sc: 0.60 * 1.15, skin: '#ffe0b2', shirt: '#76ff03', phase: 0.6 },
+    { startX: -1400, speed: 4.7, sc: 0.53 * 1.15, skin: '#fff9c4', shirt: '#ff1744', phase: 1.3 },
+    { startX: -1600, speed: 5.0, sc: 0.55 * 1.15, skin: '#ffccbc', shirt: '#ff9100', phase: 2.0 },
 ];
 
 // ─── Giant robot (background, evil) ───────────────────────────────────────────
@@ -151,7 +151,7 @@ const GiantRobot: React.FC<{ bass: number; frame: number }> = ({ bass, frame }) 
     const walkPhase = frame * 0.045;
     const bodyBob = Math.abs(Math.sin(walkPhase)) * 30 * sc; // dips on each step (Exaggerated!)
 
-    const torsoY = H * 0.385 + bodyBob;
+    const torsoY = H * 0.405 + bodyBob;
     const headY = torsoY - headH - jawH - 10;
     const skullH = headH - jawH;
     const skullY = headY;
@@ -382,7 +382,7 @@ export const RobotApocalypse: React.FC = () => {
     const walkPhase = frame * 0.045;
     const bodyBob = Math.abs(Math.sin(walkPhase)) * 30 * 1.47; // sc=1.47 dips on each step
 
-    const torsoY = H * 0.385 + bodyBob;
+    const torsoY = H * 0.405 + bodyBob;
     const cx = W * 0.5;
 
     // Left arm sway
@@ -617,8 +617,8 @@ export const RobotApocalypse: React.FC = () => {
                             const frac = binF - b0;
                             const raw = (1 - frac) * (viz[b0] ?? 0) + frac * (viz[b1] ?? 0);
                             const amp = Math.min(raw * 4.5 * blockScale[bi], 1);
-                            // Reduced height by 15% (0.92 -> 0.78)
-                            const barH = Math.max(4, amp * maxH * 0.78);
+                            // Reduced height by another 10% (0.78 -> 0.70)
+                            const barH = Math.max(4, amp * maxH * 0.70);
                             const hue = 6 + amp * 26;
                             const lit = 22 + amp * 46;
                             const x = bi * blockW + i * barW;

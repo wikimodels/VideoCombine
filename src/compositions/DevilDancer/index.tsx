@@ -150,7 +150,7 @@ export const DevilDancer: React.FC = () => {
     const isBeat = bass > 0.3;
 
     const cx = width / 2;
-    const FLOOR = Math.round(height * 0.80);
+    const FLOOR = Math.round(height * 0.90); // Lowered from 0.80
 
     // ── ANIMATION VALUES ──────────────────────────────────────────────────────
     const t = frame;
@@ -168,19 +168,16 @@ export const DevilDancer: React.FC = () => {
     const raiseLeft = Math.sin(t * 0.1) > 0;
     const beatStrL = raiseLeft ? bass : bass * 0.2;
 
-    // LEFT ARM
-    // Base pointing straight up (180) minus 45 to lean left. 
-    // Forearm bends back inwards (now 45 so total angle is 180 = straight up).
-    const uArmL = 180 - 45 - beatStrL * 30; // 135° -> 105° on beat (points more vertical)
-    const fArmL = 45 - beatStrL * 45; // 45° inward bend -> 0° straight on beat
+    // LEFT ARM (Pitchfork) - Thrust UP on beat
+    // Base points vertical (180) on beat
+    const uArmL = 140 + beatStrL * 40; // 140° -> 180° on beat (strict vertical)
+    const fArmL = 20 - beatStrL * 20; // 20° inward -> 0° straight
 
-    // RIGHT ARM
-    // Base pointing straight up (-180) plus 45 to lean right.
-    // Forearm bends back inwards -90.
+    // RIGHT ARM - Joyful raise UP on beat
     const raiseRight = !raiseLeft;
     const beatStrR = raiseRight ? bass : bass * 0.2;
-    const uArmR = -180 + 45 + beatStrR * 30; // -135° -> -105° on beat
-    const fArmR = -90 + beatStrR * 90; // -90° inward bend -> 0° straight on beat
+    const uArmR = -140 - beatStrR * 40; // -140° -> -180° on beat
+    const fArmR = -20 + beatStrR * 20; // -20° inward -> 0° straight
 
     // Legs: stomp driven by bass
     const stepL = Math.sin(t * 0.20) * (14 + bass * 40);
@@ -195,8 +192,8 @@ export const DevilDancer: React.FC = () => {
     const tailSway = Math.sin(t * 0.12) * 18;
 
     // Body center position
-    const bodyCx = cx;
-    const bodyCy = FLOOR - 240; // approximate center
+    const bodyCx = width - 475; // Positioned so tail tip (scaled 1.45) was ~6px, will check at 1.23
+    const bodyCy = FLOOR - 315; // Adjusted for 1.23 scale
 
     // Character dimensions
     const BODY_RX = 140; const BODY_RY = 130;
@@ -265,8 +262,8 @@ export const DevilDancer: React.FC = () => {
                 <ellipse cx={bodyCx} cy={FLOOR + 10} rx={120 + bass * 30} ry={18}
                     fill="rgba(0,0,0,0.55)" style={{ filter: 'blur(8px)' }} />
 
-                {/* ── UNIFIED SCALING GROUP for Character (+15%) ── */}
-                <g transform={`translate(${bodyCx}, ${bodyCy}) scale(1.15) translate(${-bodyCx}, ${-bodyCy})`}>
+                {/* ── UNIFIED SCALING GROUP for Character (Reduced to 1.23) ── */}
+                <g transform={`translate(${bodyCx}, ${bodyCy}) scale(1.23) translate(${-bodyCx}, ${-bodyCy})`}>
 
                     {/* ── TAIL — bright orange, right side, curls UP ── */}
                     {(() => {
@@ -279,11 +276,11 @@ export const DevilDancer: React.FC = () => {
                         const ty1 = bodyCy + 180;
 
                         // End of the tail curve: pointing back UP and slightly right
-                        const tx2 = bodyCx + BODY_RX + 150 + tailSway * 0.8;
+                        const tx2 = bodyCx + BODY_RX + 115 + tailSway * 0.6;
                         const ty2 = bodyCy + 60; // Much higher Y coordinate (upwards)
 
-                        // The actual arrowhead tip (positioned slightly beyond the curve end)
-                        const tipX = tx2 + 10 + tailSway * 0.5;
+                        // The actual arrowhead tip (positioned to hook inward)
+                        const tipX = tx2 + 5 + tailSway * 0.4;
                         const tipY = ty2 - 20; // Even higher for the tip
 
                         return (
@@ -299,8 +296,8 @@ export const DevilDancer: React.FC = () => {
                                     stroke="#ffaa00" strokeWidth={7} fill="none" strokeLinecap="round"
                                     opacity={0.7} />
 
-                                {/* Arrowhead tip (pointing UP-RIGHT) */}
-                                <g transform={`translate(${tipX}, ${tipY}) rotate(30)`}>
+                                {/* Arrowhead tip (pointing UP-LEFT/Vertical) */}
+                                <g transform={`translate(${tipX}, ${tipY}) rotate(0)`}>
                                     <polygon
                                         points="0,-25 20,15 -20,15"
                                         fill="#ff5500"
@@ -357,9 +354,9 @@ export const DevilDancer: React.FC = () => {
                                         {/* ── PITCHFORK ── */}
                                         <g transform={`translate(0, ${ARM_F - 10})`}>
                                             <g transform="rotate(180)"> {/* Flip to point UP relative to the new hand orientation */}
-                                                {/* Shift the whole pitchfork so he holds it by the middle */}
-                                                <g transform="translate(0, -150)">
-                                                    <rect x="-7" y="-20" width="14" height={400} rx="5"
+                                                {/* Shift the whole pitchfork so he holds it lower, and it extends higher */}
+                                                <g transform="translate(0, -320)">
+                                                    <rect x="-7" y="-20" width="14" height={600} rx="5"
                                                         fill="#5a3000"
                                                         style={{ filter: 'drop-shadow(0 0 4px #ff6600)' }} />
                                                     <rect x="-60" y="-20" width="120" height="16" rx="6" fill="#5a3000" />
@@ -405,6 +402,27 @@ export const DevilDancer: React.FC = () => {
                                     </g>
                                 </g>
                             </g>
+                        </g>
+
+                        {/* ── GOLD CHAIN (Bling) ── */}
+                        <g transform={`translate(${bodyCx}, ${bodyCy - BODY_RY + 10 + bass * 25})`}>
+                            {/* Outer thick chain line - Sagging more (mid-belly) */}
+                            <path d="M -90,-20 Q 0,120 90,-20" stroke="#d4af37" strokeWidth="18" fill="none" strokeLinecap="round" />
+                            {/* Inner bright line for shine */}
+                            <path d="M -90,-20 Q 0,120 90,-20" stroke="#ffd700" strokeWidth="8" fill="none" strokeLinecap="round" opacity={0.6} />
+                            {/* Highlights / links feeling - Distributed along the longer curve */}
+                            {[-60, -30, 0, 30, 60].map((lx, li) => {
+                                // Quadratic curve Q(t) = (1-t)^2*P0 + 2(1-t)*t*P1 + t^2*P2
+                                // P0=(-90,-20), P1=(0,120), P2=(90,-20)
+                                // Simplified Y for P0.y=P2.y=-20: y = -20 + (120 - (-20)) * 2 * (1-t) * t
+                                const tPos = (lx + 90) / 180;
+                                const ly = -20 + 140 * 2 * (1 - tPos) * tPos;
+                                return (
+                                    <ellipse key={li} cx={lx} cy={ly} rx="12" ry="16" fill="#ffd700"
+                                        opacity={0.4 + Math.sin(t * 0.2 + li) * 0.3}
+                                        style={{ filter: 'blur(2px)' }} />
+                                );
+                            })}
                         </g>
 
                         {/* ── HEAD ── */}

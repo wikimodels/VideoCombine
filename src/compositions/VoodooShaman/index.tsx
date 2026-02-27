@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { AbsoluteFill, useCurrentFrame, Audio, staticFile, useVideoConfig } from 'remotion';
 import { useAudioData, visualizeAudio } from '@remotion/media-utils';
 
@@ -8,6 +8,58 @@ export const VoodooShaman: React.FC = () => {
     const audioUrl = staticFile('track.mp3');
     const audioData = useAudioData(audioUrl);
 
+    // ── SCENE CONSTANTS ──
+    const cx = width / 2;
+    const FLOOR = Math.round(height * 0.925); // Lowered from 0.85 (halved bottom gap)
+
+    // ── COLORS (Moved up for useMemo/Global use) ──
+    const FLAME_COLOR_1 = '#ff2200'; // Hellfire Red
+    const FLAME_COLOR_2 = '#ff8800'; // Magic Orange
+
+    // ── CONFIG ──
+    const TOP_ZONE_PERCENT = 0.2; // Increased to 20%
+    const TOP_ZONE_HEIGHT = height * TOP_ZONE_PERCENT;
+
+    // ── RITUAL STICKS (Rotating in top zone) ──
+    // Grid-based jitter distribution for a more 'harmonious' look
+    const sticks = useMemo(() => {
+        const columns = 9;
+        const rows = 2;
+        const _sticks: any[] = [];
+
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < columns; c++) {
+                const cellW = width / columns;
+                const cellH = TOP_ZONE_HEIGHT / rows;
+
+                _sticks.push({
+                    id: r * columns + c,
+                    x: cellW * c + cellW / 2 + (Math.random() - 0.5) * cellW * 0.7,
+                    y: cellH * r + cellH / 2 + (Math.random() - 0.5) * cellH * 0.7,
+                    len: 45 + Math.random() * 65,
+                    speed: 0.1 + Math.random() * 0.3,
+                    rotationDir: Math.random() > 0.5 ? 1 : -1,
+                    offset: Math.random() * Math.PI * 2,
+                    color: `hsl(${Math.random() * 360}, 100%, 50%)` // Sync with skulls palette
+                });
+            }
+        }
+        return _sticks;
+    }, [width, TOP_ZONE_HEIGHT]);
+
+    // ── RITUAL EMBERS (Flying sparks from fire) ──
+    const embers = useMemo(() => {
+        return Array.from({ length: 40 }).map((_, i) => ({
+            id: i,
+            x: Math.random() * width,
+            yBase: FLOOR,
+            speed: 1 + Math.random() * 3,
+            drift: (Math.random() - 0.5) * 100,
+            size: 2 + Math.random() * 4,
+            offset: Math.random() * 1000,
+        }));
+    }, [width, FLOOR]);
+
     if (!audioData) return <AbsoluteFill style={{ backgroundColor: '#02000a' }} />;
 
     const viz = visualizeAudio({ fps, frame, audioData, numberOfSamples: 64 });
@@ -16,19 +68,15 @@ export const VoodooShaman: React.FC = () => {
     const high = Math.min((viz[8] + viz[10] + viz[12]) / 3 * 6, 1);
 
     const t = frame;
-    const cx = width / 2;
-    const FLOOR = Math.round(height * 0.85);
 
-    // ── COLORS ──
+    // ── MORE COLORS ──
     const BG_DARK = '#080510';
-    const FLAME_COLOR_1 = '#ff2200'; // Hellfire Red
-    const FLAME_COLOR_2 = '#ff8800'; // Magic Orange
     const MASK_WOOD = '#ffddaa'; // Bright Bone Skull color
     const CLOAK = '#aa0015'; // Bright Blood Red Cloak
 
     // ── SHAMAN BODY ──
     const shX = cx;
-    const shY = FLOOR - 100;
+    const shY = FLOOR - 320; // Lifted even higher to clear the floor/fire
     // Bobs up and down subtly
     const shDy = Math.sin(t * 0.1) * 10 - bass * 30;
 
@@ -92,6 +140,7 @@ export const VoodooShaman: React.FC = () => {
         return { sx, sy, sc, op, id: i, phase: (t * 0.1 + i), color };
     });
 
+
     return (
         <AbsoluteFill style={{ backgroundColor: BG_DARK, overflow: 'hidden' }}>
             <Audio src={audioUrl} />
@@ -126,8 +175,32 @@ export const VoodooShaman: React.FC = () => {
                     </g>
                 </defs>
 
-                {/* ── BACKGROUND GLOW ── */}
+                {/* ── BACKGROUND GLOW & MYSTICAL SMOKE ── */}
                 <rect x="0" y="0" width={width} height={height} fill="url(#fireGlow)" />
+
+                {/* Floating Mystical Smoke */}
+                <g opacity={0.2 + bass * 0.1}>
+                    <circle cx={width * 0.3 + Math.sin(t * 0.01) * 200} cy={height * 0.2} r="300" fill={FLAME_COLOR_1} style={{ filter: 'blur(100px)' }} opacity="0.3" />
+                    <circle cx={width * 0.7 + Math.cos(t * 0.012) * 200} cy={height * 0.25} r="350" fill={FLAME_COLOR_2} style={{ filter: 'blur(120px)' }} opacity="0.2" />
+                    <circle cx={width * 0.5 + Math.sin(t * 0.008) * 100} cy={height * 0.15} r="250" fill="#4400ff" style={{ filter: 'blur(110px)' }} opacity="0.2" />
+                </g>
+
+                {/* ── RITUAL STICKS (Rotating in Top Zone) ── */}
+                <g>
+                    {sticks.map((stick) => {
+                        const rot = t * 0.02 * stick.speed * stick.rotationDir + stick.offset;
+                        return (
+                            <g key={stick.id} transform={`translate(${stick.x}, ${stick.y}) rotate(${rot * 180 / Math.PI})`}>
+                                {/* The Stick - Thickness increased further (to 6) for better visibility */}
+                                <rect x={-stick.len / 2} y="-3" width={stick.len} height="6" rx="3" fill={stick.color} opacity={0.4 + bass * 0.4} />
+                                {/* Glowing tips */}
+                                <circle cx={-stick.len / 2} cy="0" r="4" fill="#fff" opacity={0.7} />
+                                <circle cx={stick.len / 2} cy="0" r="4" fill="#fff" opacity={0.7} />
+                                <circle cx="0" cy="0" r={stick.len / 2} fill={stick.color} opacity={0.15 * bass} style={{ filter: 'blur(12px)' }} />
+                            </g>
+                        );
+                    })}
+                </g>
 
                 {/* ── TOTEM POLES (Parallax Background) ── */}
                 <g opacity="0.15">
@@ -177,14 +250,38 @@ export const VoodooShaman: React.FC = () => {
                 {/* Layer 2 - Dark Green, mid height, medium noise */}
                 <path d={createFirePath(3, 0.9, bass + 0.3)} fill="#005511" opacity="0.6" style={{ filter: 'blur(10px)' }} />
 
+                {/* ── FLYING EMBERS (Middle Layer for Depth) ── */}
+                <g>
+                    {embers.map((ember) => {
+                        const life = (t * ember.speed + ember.offset) % 1000;
+                        const progress = life / 1000;
+                        const ex = ember.x + Math.sin(t * 0.05 + ember.id) * 50 + ember.drift * progress;
+                        const ey = FLOOR - progress * 1300;
+                        const eScale = Math.sin(progress * Math.PI) * (1 + high * 2);
+                        const eColor = progress < 0.3 ? '#fff' : FLAME_COLOR_2;
+
+                        return (
+                            <circle
+                                key={ember.id}
+                                cx={ex}
+                                cy={ey}
+                                r={ember.size * eScale}
+                                fill={eColor}
+                                opacity={Math.sin(progress * Math.PI) * (0.6 + high * 0.4)}
+                                style={{ filter: `blur(${1 + high * 3}px)` }}
+                            />
+                        );
+                    })}
+                </g>
+
                 {/* ── VOODOO SHAMAN CHARACTER ── */}
-                <g transform={`translate(${shX}, ${shY + shDy}) translate(0, 150) scale(1.8) translate(0, -150)`}>
+                <g transform={`translate(${shX}, ${shY + shDy}) translate(0, 150) scale(2.1) translate(0, -150)`}>
 
                     {/* Shadow on floor */}
-                    <ellipse cx="0" cy="100" rx={150 + bass * 30} ry="20" fill="#000" opacity="0.6" />
+                    <ellipse cx="0" cy="150" rx={150 + bass * 30} ry="20" fill="#000" opacity="0.6" />
 
-                    {/* Back Cloak */}
-                    <path d="M -160 100 C -120 0, 120 0, 160 100 Z" fill="#500008" />
+                    {/* Back Cloak - Lengthened to reach floor */}
+                    <path d="M -160 215 C -120 0, 120 0, 160 215 Z" fill="#500008" />
 
                     {/* Left Arm holding Staff - UP (Cactus pose) */}
                     <g transform={`translate(-100, -80)`}>
@@ -206,20 +303,27 @@ export const VoodooShaman: React.FC = () => {
                     <g transform={`translate(100, -80)`}>
                         {/* Arm UP */}
                         <path d="M 0 0 C 40 -40, 80 -40, 80 -120" stroke={CLOAK} strokeWidth="40" fill="none" strokeLinecap="round" />
-                        {/* Rattle shaking */}
+                        {/* Rattle shaking - Lengthened handle BELOW hand, but restored length ABOVE hand */}
                         <g transform={`translate(80, -120) rotate(${shakeR})`}>
-                            {/* Stick */}
-                            <line x1="0" y1="40" x2="0" y2="-40" stroke={MASK_WOOD} strokeWidth="10" />
-                            {/* Gourd */}
-                            <circle cx="0" cy="-40" r="25" fill="#8b5a2b" />
-                            <circle cx="0" cy="-40" r="25" fill={FLAME_COLOR_2} opacity={0.3 + high * 0.5} style={{ filter: 'blur(5px)' }} />
+                            {/* Stick: y1 is below the hand (lengthened), y2 is above (restored) */}
+                            <line x1="0" y1="40" x2="0" y2="-80" stroke={MASK_WOOD} strokeWidth="10" />
+                            {/* Gourd moved back to original distance - Added independent pulse */}
+                            {(() => {
+                                const rattlePulse = 1 + Math.sin(t * 0.15) * 0.08;
+                                return (
+                                    <g transform={`scale(${rattlePulse})`}>
+                                        <circle cx="0" cy={-80 / rattlePulse} r="25" fill="#8b5a2b" />
+                                        <circle cx="0" cy={-80 / rattlePulse} r="25" fill={FLAME_COLOR_2} opacity={0.3 + high * 0.5} style={{ filter: 'blur(5px)' }} />
+                                    </g>
+                                );
+                            })()}
                         </g>
                         {/* Hand */}
                         <circle cx="80" cy="-120" r="15" fill={CLOAK} />
                     </g>
 
-                    {/* Main Cloak Body */}
-                    <path d="M -120 100 C -90 -60, 90 -60, 120 100 C 60 110, -60 110, -120 100 Z" fill={CLOAK} />
+                    {/* Main Cloak Body - Lengthened to reach floor */}
+                    <path d="M -120 215 C -90 -60, 90 -60, 120 215 C 60 225, -60 225, -120 215 Z" fill={CLOAK} />
 
                     {/* Character Hood */}
                     <path d="M -60 -180 C -100 -180, -90 -30, -50 20 C 0 50, 0 50, 50 20 C 90 -30, 100 -180, 60 -180 C 30 -220, -30 -220, -60 -180 Z" fill="#050000" />
