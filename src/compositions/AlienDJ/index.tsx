@@ -1,7 +1,7 @@
 import React from 'react';
 import { AbsoluteFill, useCurrentFrame, Audio, staticFile, useVideoConfig } from 'remotion';
 import { useAudioData, visualizeAudio } from '@remotion/media-utils';
-
+import { ReactingStarfield } from '../../components/ReactingStarfield';
 // GlowDot component for antennas and lights
 const GlowDot: React.FC<{
     cx: number; cy: number; pulse: number; color: string; baseR?: number;
@@ -102,11 +102,12 @@ export const AlienDJ: React.FC = () => {
 
     return (
         <AbsoluteFill style={{ backgroundColor: '#040011', overflow: 'hidden' }}>
+            <ReactingStarfield />
             <Audio src={audioUrl} />
 
             {/* ── BACKGROUND LASERS / EQ ── */}
             <AbsoluteFill style={{
-                background: `radial-gradient(ellipse at 50% 60%, rgba(0, 150, 255, ${0.1 + volume * 0.3}) 0%, rgba(0,0,0,1) 70%)`
+                background: `radial-gradient(ellipse at 50% 60%, rgba(0, 150, 255, ${0.1 + volume * 0.3}) 0%, transparent 70%)`
             }} />
 
             <svg style={{ position: 'absolute', top: 0, left: 0 }} width={width} height={height}>

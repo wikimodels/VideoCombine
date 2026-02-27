@@ -47,15 +47,24 @@ const Alien: React.FC<AlienProps> = ({
     const swing = Math.sin(t * 0.17 + phase) * (28 + mid * 65);
     const beatStr = Math.min(bass * 3, 1);
 
-    // Pseudo-random side: slow sine unique per alien (phase shifts it differently)
-    const raiseLeft = Math.sin(frame * 0.007 + phase * 3.1) > 0;
-    const raiseL = raiseLeft ? beatStr * 132 : -(beatStr * 16);
-    const raiseR = !raiseLeft ? beatStr * 132 : -(beatStr * 16);
+    // Pseudo-random up-swing: sometimes only one arm goes up, on hard beats maybe both
+    const raiseLeft = Math.sin(frame * 0.007 + phase * 3.1) > -0.2;
+    const raiseRight = Math.cos(frame * 0.009 + phase * 2.2) > -0.2;
 
-    const uArmL = -50 + swing - raiseL;
-    const fArmL = 30 + Math.sin(t * 0.21 + phase + 0.4) * (18 + mid * 40) * (1 - beatStr * 0.65);
-    const uArmR = 50 - swing + raiseR;
-    const fArmR = -30 + Math.sin(t * 0.21 + phase + Math.PI + 0.4) * (18 + mid * 40) * (1 - beatStr * 0.65);
+    // Convert beat strength to an upward angle (approx 140 degrees)
+    const upAngle = beatStr * 140;
+
+    const liftL = raiseLeft ? upAngle : (beatStr * 20); // Small bounce if not fully raised
+    const liftR = raiseRight ? upAngle : (beatStr * 20);
+
+    // Left arm starts at -50 (pointing down-outward). To go UP, we need to subtract angle (go more negative -> -190)
+    const uArmL = -50 + swing - (liftL * 0.9);
+    // Forearm bends more when raised
+    const fArmL = 30 + Math.sin(t * 0.21 + phase + 0.4) * (18 + mid * 40) - (liftL * 0.4);
+
+    // Right arm starts at 50 (pointing down-outward). To go UP, we need to add angle (go more positive -> 190)
+    const uArmR = 50 - swing + (liftR * 0.9);
+    const fArmR = -30 + Math.sin(t * 0.21 + phase + Math.PI + 0.4) * (18 + mid * 40) + (liftR * 0.4);
 
     // ── Legs: walk/step motion driven by bass ────────────────────────────────
     const step = Math.sin(t * 0.19 + phase) * (18 + bass * 42);
@@ -208,11 +217,114 @@ const Alien: React.FC<AlienProps> = ({
     );
 };
 
+// ─── Overhead Neon Crystal ───────────────────────────────────────────────────
+const NeonCrystal: React.FC<{
+    cx: number; cy: number;
+    frame: number; bass: number; mid: number; volume: number;
+    phase: number;
+}> = ({ cx, cy, frame, bass, mid, volume, phase }) => {
+    // Rotation logic - staggered by phase
+    const rotSpeed = 0.03 + mid * 0.02;
+    const t = frame * rotSpeed + phase;
+
+    // 3D Octahedron vertices (Top, Bottom, and 4 equator points)
+    // Scaled down by another 20% (H was 98, R was 60)
+    const H = 78;
+    const R = 48;
+
+    // Scale jumps slightly on bass
+    const sc = 1 + bass * 0.15;
+
+    // Calculate the 4 equator points in fake 3D
+    // We only need X and Z (depth) to draw the polygons
+    const pts = [0, 1, 2, 3].map(i => {
+        const angle = t + (Math.PI / 2) * i;
+        return {
+            x: Math.cos(angle) * R * sc,
+            z: Math.sin(angle) * R * sc, // Z is for sorting and shading
+        };
+    });
+
+    const top = { x: 0, y: -H * sc };
+    const bot = { x: 0, y: H * sc };
+
+    // Dynamic color shifting based on high/mid, staggered by phase
+    const hue = (220 + mid * 100 + frame * 0.5 + phase * 60) % 360;
+
+    // Asymmetric blinking: combine global beat with a local pulsing wave based on phase
+    const localPulse = Math.sin(frame * 0.15 + phase) * 0.25;
+    const isBright = (bass + localPulse) > 0.45;
+    const glowStr = Math.max(0, bass + localPulse);
+
+    // Draw order matters! Sort the 4 faces by their average Z depth.
+    // Face 0: pt[0] to pt[1]
+    // Face 1: pt[1] to pt[2]
+    // Face 2: pt[2] to pt[3]
+    // Face 3: pt[3] to pt[0]
+
+    const facesTop = [];
+    const facesBot = [];
+
+    for (let i = 0; i < 4; i++) {
+        const p1 = pts[i];
+        const p2 = pts[(i + 1) % 4];
+        const avgZ = (p1.z + p2.z) / 2;
+
+        // Only draw front-facing polygons (where avgZ > 0 in our simple projection)
+        if (avgZ > -10) {
+            // Calculate lightness based on angle to simulate shiny faces
+            const light = 40 + (p1.x - p2.x + R) / (2 * R) * 40;
+            const faceHue = (hue + i * 15) % 360;
+
+            // Top pyramid face
+            facesTop.push(
+                <polygon key={`top-${i}`}
+                    points={`${top.x},${top.y} ${p1.x},0 ${p2.x},0`}
+                    fill={`hsl(${faceHue}, 100%, ${isBright ? 80 : light}%)`}
+                    stroke="white" strokeWidth={isBright ? 3 : 1}
+                    opacity={isBright ? 0.9 : 0.75}
+                />
+            );
+            // Bottom pyramid face
+            facesBot.push(
+                <polygon key={`bot-${i}`}
+                    points={`${bot.x},${bot.y} ${p1.x},0 ${p2.x},0`}
+                    fill={`hsl(${faceHue}, 100%, ${isBright ? 60 : light - 20}%)`}
+                    stroke="white" strokeWidth={isBright ? 3 : 1}
+                    opacity={isBright ? 0.9 : 0.75}
+                />
+            );
+        }
+    }
+
+    return (
+        <g transform={`translate(${cx}, ${cy})`}>
+            {/* Massive backdrop glow */}
+            <circle cx="0" cy="0" r={H * (1 + glowStr)}
+                fill={`hsl(${hue}, 100%, 50%)`}
+                opacity={0.15 + glowStr * 0.4}
+                style={{ filter: `blur(${40 + glowStr * 40}px)` }}
+            />
+            {isBright && (
+                <circle cx="0" cy="0" r={H * 0.6}
+                    fill="white"
+                    opacity={0.8}
+                    style={{ filter: 'blur(30px)' }}
+                />
+            )}
+
+            {/* The Crystal geometry */}
+            {facesTop}
+            {facesBot}
+        </g>
+    );
+};
+
 // ─── Main scene ────────────────────────────────────────────────────────────
 const ALIENS = [
-    { x: 200, scale: 0.92, phase: 0, speedK: 1.05, baseHue: 135, eye: '#00cc44', glow: '#00ff44' },
-    { x: 540, scale: 1.12, phase: Math.PI / 2.5, speedK: 1.0, baseHue: 280, eye: '#9900ff', glow: '#cc44ff' },
-    { x: 880, scale: 0.92, phase: Math.PI * 0.78, speedK: 0.95, baseHue: 190, eye: '#0099cc', glow: '#00ccff' },
+    { x: 200, scale: 1.012, phase: 0, speedK: 1.05, baseHue: 135, eye: '#00cc44', glow: '#00ff44' },
+    { x: 540, scale: 1.232, phase: Math.PI / 2.5, speedK: 1.0, baseHue: 280, eye: '#9900ff', glow: '#cc44ff' },
+    { x: 880, scale: 1.012, phase: Math.PI * 0.78, speedK: 0.95, baseHue: 190, eye: '#0099cc', glow: '#00ccff' },
 ];
 
 export const AlienParty: React.FC = () => {
@@ -238,8 +350,12 @@ export const AlienParty: React.FC = () => {
     const tileW = width / TILE_COLS;
     const tileH = (height - FLOOR_Y) / TILE_ROWS;
 
-    // Waveform bars for background
-    const bars = Array.from({ length: 48 }, (_, i) => viz[i] ?? 0);
+    // Waveform bars for background (mirrored tsunami effect)
+    const bars = Array.from({ length: 64 }, (_, i) => {
+        const isLeftHalf = i < 32;
+        const visIdx = isLeftHalf ? i : (63 - i);
+        return viz[visIdx] ?? 0;
+    });
 
     return (
         <AbsoluteFill style={{ backgroundColor: '#050015', overflow: 'hidden' }}>
@@ -265,19 +381,34 @@ export const AlienParty: React.FC = () => {
                             flex: 1,
                             height: `${amp * 3 * 50}%`,
                             background: `hsl(${hue},100%,55%)`,
-                            opacity: 0.18 + amp * 0.15,
+                            opacity: 0.20 + amp * 0.17, // Increased overall brightness by ~10%
                         }} />
                     );
                 })}
             </div>
 
-            {/* ── SPOTLIGHTS on each alien ── */}
+            {/* ── SPOTLIGHTS & CRYSTAL ── */}
             <svg style={{ position: 'absolute', top: 0, left: 0 }} width={width} height={height}>
+                {/* Legacy spotlights for each alien */}
                 {ALIENS.map((a, i) => (
-                    <polygon key={i}
+                    <polygon key={`spot-${i}`}
                         points={`${a.x},0 ${a.x - 120},${FLOOR_Y} ${a.x + 120},${FLOOR_Y}`}
                         fill={a.glow}
-                        opacity={0.06 + volume * 0.07}
+                        opacity={0.06 + volume * 0.05}
+                    />
+                ))}
+
+                {/* Overhead Spinning Crystals */}
+                {ALIENS.map((a, i) => (
+                    <NeonCrystal
+                        key={`crystal-${i}`}
+                        cx={a.x}
+                        cy={160}
+                        frame={frame}
+                        bass={bass}
+                        mid={mid}
+                        volume={volume}
+                        phase={a.phase}
                     />
                 ))}
             </svg>

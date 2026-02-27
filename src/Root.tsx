@@ -22,6 +22,7 @@ import { CybercoreBreach } from './compositions/CybercoreBreach';
 import { UfoAttacksScene } from './components/3D/UfoAttacksScene';
 import { UfoCityAttack } from './compositions/UfoCityAttack';
 import { RobotApocalypse } from './compositions/RobotApocalypse';
+import { NinjaFighting } from './compositions/NinjaFighting';
 
 const FPS = 30;
 
@@ -93,6 +94,11 @@ export const RemotionRoot: React.FC = () => (
     <Composition
       id="RobotApocalypse"
       component={RobotApocalypse}
+      {...S}
+    />
+    <Composition
+      id="NinjaFighting"
+      component={NinjaFighting}
       {...S}
     />
   </>
