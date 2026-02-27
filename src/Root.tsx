@@ -24,6 +24,7 @@ import { UfoCityAttack } from './compositions/UfoCityAttack';
 import { RobotApocalypse } from './compositions/RobotApocalypse';
 import { NinjaFighting } from './compositions/NinjaFighting';
 import { RobotBoxing } from './compositions/RobotBoxing';
+import { CommandoScene } from './compositions/CommandoScene';
 
 const FPS = 30;
 
@@ -42,9 +43,19 @@ const S = {
   height: 1920,
 } as const;
 
+// 16:9 Landscape scenes: 1920x1080, 30fps
+const S_LANDSCAPE = {
+  ...S,
+  width: 1920,
+  height: 1080,
+} as const;
+
 export const RemotionRoot: React.FC = () => (
   <>
     {/* Legacy scene */}
+
+    {/* ── 16:9 Landscape scenes ── */}
+    <Composition id="CommandoScene" component={CommandoScene} {...S_LANDSCAPE} />
 
     {/* ── 9:16 TikTok / Shorts scenes ── */}
     <Composition id="GlitchArt" component={GlitchArt} {...S} />
