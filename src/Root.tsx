@@ -25,12 +25,16 @@ import { RobotApocalypse } from './compositions/RobotApocalypse';
 import { NinjaFighting } from './compositions/NinjaFighting';
 import { RobotBoxing } from './compositions/RobotBoxing';
 import { CommandoScene } from './compositions/CommandoScene';
+import VinylStreamOverlay from './compositions/VinylStreamOverlay';
 
 const FPS = 30;
 
 // Duration = full audio track length, computed at runtime
+import VinylConfig from './compositions/VinylStreamOverlay/config.json';
+const audioAssetUrl = require(`./compositions/VinylStreamOverlay/assets/${VinylConfig.audioTrack.src}`);
+
 const calculateAudioDuration = async () => {
-  const durationSec = await getAudioDurationInSeconds(staticFile("track.mp3"));
+  const durationSec = await getAudioDurationInSeconds(typeof audioAssetUrl === 'string' ? audioAssetUrl : audioAssetUrl.default);
   return { durationInFrames: Math.ceil(durationSec * FPS) };
 };
 
@@ -117,6 +121,11 @@ export const RemotionRoot: React.FC = () => (
       id="RobotBoxing"
       component={RobotBoxing}
       {...S}
+    />
+    <Composition
+      id="VinylStreamOverlay"
+      component={VinylStreamOverlay}
+      {...S_LANDSCAPE}
     />
   </>
 );

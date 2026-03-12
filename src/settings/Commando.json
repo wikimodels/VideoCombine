@@ -1,26 +1,19 @@
 {
+    "game": "",
     "hero": {
-        "skin": "",
-        "muzzleFlash": ""
+        "width": 120,
+        "height": 140,
+        "muzzleOffsetX": 105,
+        "muzzleOffsetY": 40
     },
     "enemies": {
-        "type_1": "",
-        "type_2": "",
-        "type_3": ""
+        "count": 3,
+        "width": 100,
+        "height": 130,
+        "muzzleOffsetX": 5,
+        "muzzleOffsetY": 45
     },
     "objects": {
-        "crate": "",
-        "bush": "",
-        "tower": "",
-        "tree": "",
-        "stone": ""
-    },
-    "bullets": {
-        "hero": "",
-        "enemy": ""
-    },
-    "landscape": {
-        "background": "",
-        "overlay": ""
+        "count": 5
     }
 }

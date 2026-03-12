@@ -1,0 +1,30 @@
+{
+    "game": "CommandoScene",
+    "hero": {
+        "width": 120,
+        "height": 140,
+        "muzzleOffsetX": 72,
+        "muzzleOffsetY": 53
+    },
+    "enemies": {
+        "count": 3,
+        "width": 100,
+        "height": 130,
+        "type_1": {
+            "muzzleOffsetX": 1,
+            "muzzleOffsetY": 21
+        },
+        "type_2": {
+            "muzzleOffsetX": 2,
+            "muzzleOffsetY": 16
+        },
+        "type_3": {
+            "muzzleOffsetX": 1,
+            "muzzleOffsetY": 33
+        }
+    },
+    "objects": {
+        "count": 2
+    },
+    "background": "background.svg"
+}

@@ -5,3 +5,24 @@ dist
 
 # Ignore the output video from Git but not videos you import into src/.
 out
+
+# Ignore heavy media and source files
+*.mp3
+*.wav
+*.flac
+*.ogg
+*.m4a
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+*.psd
+*.ai
+*.sketch
+*.xd
+*.zip
+*.rar
+*.tar
+*.gz
+*.7z
