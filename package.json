@@ -32,7 +32,8 @@
     "dev": "remotion studio",
     "build": "remotion bundle",
     "upgrade": "remotion upgrade",
-    "lint": "eslint src && tsc"
+    "lint": "eslint src && tsc",
+    "render:all": "node --loader ts-node/esm scripts/render-all.mjs"
   },
   "sideEffects": [
     "*.css"

@@ -1,0 +1,42 @@
+{
+    "overlay": {
+        "background": "#E8E4D9",
+        "vinylSize": 300,
+        "originBgColor": "#1a1a1a",
+        "originScale": 0.85,
+        "particleSrc": "crosshair.svg",
+        "particleDeceleration": 0.25,
+        "particleMaxHeight": 0.8,
+        "colors": [
+            "#4a4a4a",
+            "#6a6a6a",
+            "#8a8a8a",
+            "#a8a8a8"
+        ]
+    },
+    "equalizer": {
+        "enabled": true,
+        "bands": 48,
+        "color": "#4a4a4a",
+        "color2": "#2a2a2a",
+        "barWidth": 6,
+        "gap": 3,
+        "roundBars": true,
+        "reflex": false
+    },
+    "audioTrack": {
+        "src": "track.mp3"
+    },
+    "promo": {
+        "text": "LUCID DRIFT FOCUS",
+        "cycleSeconds": 60,
+        "offsetSeconds": 10,
+        "holdSeconds": 10
+    },
+    "vcrPrompt": {
+        "text": "> SYSTEM_IDLE_POTENTIAL_FLOW_",
+        "cycleSeconds": 60,
+        "offsetSeconds": 40,
+        "holdSeconds": 15
+    }
+}

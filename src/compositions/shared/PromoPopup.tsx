@@ -1,5 +1,6 @@
 import React from 'react';
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, Easing } from 'remotion';
+import { getAssetUrl } from './assets';
 
 interface PromoPopupProps {
     text: string;
@@ -70,11 +71,11 @@ export const PromoPopup: React.FC<PromoPopupProps> = ({
     const iconOutT = interpolate(iconOutPhase, [0, framesPerPhase], [0, 1], { easing: smoothEasing, extrapolateRight: 'clamp' });
 
     // Sizing (Reduced by 10% from the previous 120 base)
-    const iconSize = 97;      // -10%
-    const pillHeight = 69;    // -10%
-    const fontSize = 28;      // -10%
-    const paddingRight = 69;  // -10%
-    const paddingLeft = 34;   // -10%
+    const iconSize = 108;     // 120 * 0.9 = 108
+    const pillHeight = 77;    // 86 * 0.9 = 77
+    const fontSize = 31;      // 35 * 0.9 = 31.5
+    const paddingRight = 77;  // 86 * 0.9 = 77
+    const paddingLeft = 38;   // 43 * 0.9 = 38.7
 
     // Translations
     // Icon slides in from +600px -> 0px. Then stays. Then slides out 0 -> +600px.
@@ -92,7 +93,7 @@ export const PromoPopup: React.FC<PromoPopupProps> = ({
     const circumference = Math.PI * iconSize;
     const iconRotation = (iconTranslateX / circumference) * 360;
 
-    const iconUrl = iconSrc || null;
+    const iconUrl = getAssetUrl(iconSrc);
 
     // Total visibility opacity for the text
     const textOpacity = interpolate(textOutT - textInT, [0, 0.2, 1], [0, 1, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });

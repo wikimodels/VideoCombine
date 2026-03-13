@@ -24,23 +24,32 @@ import { UfoCityAttack } from './compositions/UfoCityAttack';
 import { RobotApocalypse } from './compositions/RobotApocalypse';
 import { NinjaFighting } from './compositions/NinjaFighting';
 import { RobotBoxing } from './compositions/RobotBoxing';
-import { CommandoScene } from './compositions/CommandoScene';
 import VinylStreamOverlay from './compositions/VinylStreamOverlay';
+import LucidDriftOS from './compositions/LucidDriftOS';
+import LucidConfig from './compositions/LucidDriftOS/config.json';
+
+// ── Pipeline ─────────────────────────────────────────────────────────────────
+import { renders } from './pipeline.config';
+import type { RenderJob } from './shared/types/pipeline';
 
 const FPS = 30;
 
-// Duration = full audio track length, computed at runtime
-import VinylConfig from './compositions/VinylStreamOverlay/config.json';
-const audioAssetUrl = require(`./compositions/VinylStreamOverlay/assets/${VinylConfig.audioTrack.src}`);
-
-const calculateAudioDuration = async () => {
-  const durationSec = await getAudioDurationInSeconds(typeof audioAssetUrl === 'string' ? audioAssetUrl : audioAssetUrl.default);
+const calculateLucidDuration = async () => {
+  const assetUrl = require(`./assets/${LucidConfig.audioTrack.src}`);
+  const durationSec = await getAudioDurationInSeconds(typeof assetUrl === 'string' ? assetUrl : assetUrl.default);
   return { durationInFrames: Math.ceil(durationSec * FPS) };
 };
 
-// All TikTok/Shorts scenes: 1080×1920 (9:16), 30fps, full track length
+/** Auto-detect duration from audio track in public/ */
+const makeCalculateMetadata = (job: RenderJob) => async () => {
+  if (job.durationSec) return { durationInFrames: Math.ceil(job.durationSec * FPS) };
+  const url = staticFile(job.audio);
+  const durationSec = await getAudioDurationInSeconds(url);
+  return { durationInFrames: Math.ceil(durationSec * FPS) };
+};
+
+// All TikTok/Shorts scenes: 1080×1920 (9:16), 30fps
 const S = {
-  calculateMetadata: calculateAudioDuration,
   durationInFrames: 1, // overridden by calculateMetadata
   fps: FPS,
   width: 1080,
@@ -56,10 +65,6 @@ const S_LANDSCAPE = {
 
 export const RemotionRoot: React.FC = () => (
   <>
-    {/* Legacy scene */}
-
-    {/* ── 16:9 Landscape scenes ── */}
-    <Composition id="CommandoScene" component={CommandoScene} {...S_LANDSCAPE} />
 
     {/* ── 9:16 TikTok / Shorts scenes ── */}
     <Composition id="GlitchArt" component={GlitchArt} {...S} />
@@ -71,61 +76,40 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="DNAHelix" component={DNAHelix} {...S} />
     <Composition id="RetroGameScene" component={RetroGameScene} {...S} />
     <Composition id="ProceduralSnake" component={ProceduralSnake} {...S} />
-    <Composition id="AlienParty" component={AlienParty}      {...S} />
-    <Composition id="KineticText" component={KineticText}    {...S} />
-    <Composition id="DevilDancer" component={DevilDancer}    {...S} />
+    <Composition id="AlienParty" component={AlienParty} {...S} />
+    <Composition id="KineticText" component={KineticText} {...S} />
+    <Composition id="DevilDancer" component={DevilDancer} {...S} />
     <Composition id="AlienDJ" component={AlienDJ} {...S} />
+    <Composition id="CyberDrummer" component={CyberDrummer} {...S} />
+    <Composition id="VoodooShaman" component={VoodooShaman} {...S} />
+    <Composition id="PepeStormFlyer" component={PepeStormFlyer} {...S} />
+    <Composition id="CybercoreBreach" component={CybercoreBreach} {...S} />
+    <Composition id="UfoAttacks" component={UfoAttacksScene} {...S} />
+    <Composition id="UfoCityAttack" component={UfoCityAttack} {...S} />
+    <Composition id="RobotApocalypse" component={RobotApocalypse} {...S} />
+    <Composition id="NinjaFighting" component={NinjaFighting} {...S} />
+    <Composition id="RobotBoxing" component={RobotBoxing} {...S} />
     <Composition
-      id="CyberDrummer"
-      component={CyberDrummer}
-      {...S}
-    />
-
-    <Composition
-      id="VoodooShaman"
-      component={VoodooShaman}
-      {...S}
-    />
-
-    <Composition
-      id="PepeStormFlyer"
-      component={PepeStormFlyer}
-      {...S}
-    />
-    <Composition
-      id="CybercoreBreach"
-      component={CybercoreBreach}
-      {...S}
-    />
-    <Composition
-      id="UfoAttacks"
-      component={UfoAttacksScene}
-      {...S}
-    />
-    <Composition
-      id="UfoCityAttack"
-      component={UfoCityAttack}
-      {...S}
-    />
-    <Composition
-      id="RobotApocalypse"
-      component={RobotApocalypse}
-      {...S}
-    />
-    <Composition
-      id="NinjaFighting"
-      component={NinjaFighting}
-      {...S}
-    />
-    <Composition
-      id="RobotBoxing"
-      component={RobotBoxing}
-      {...S}
-    />
-    <Composition
-      id="VinylStreamOverlay"
-      component={VinylStreamOverlay}
+      id="LucidDriftOS"
+      component={LucidDriftOS}
       {...S_LANDSCAPE}
+      calculateMetadata={calculateLucidDuration}
     />
+
+    {/* ── VinylStreamOverlay Pipeline ─────────────────────────────────────── */}
+    {/* Each entry in pipeline.config.ts gets its own Composition in Studio   */}
+    {renders.map(job => (
+      <Composition
+        key={job.id}
+        id={job.id}
+        component={VinylStreamOverlay}
+        defaultProps={{ job }}
+        fps={FPS}
+        durationInFrames={job.durationSec ? Math.ceil(job.durationSec * FPS) : 1}
+        calculateMetadata={makeCalculateMetadata(job)}
+        width={1920}
+        height={1080}
+      />
+    ))}
   </>
 );
