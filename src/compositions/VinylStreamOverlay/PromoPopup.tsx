@@ -5,14 +5,16 @@ import { getAssetUrl } from './index';
 interface PromoPopupProps {
     text: string;
     iconSrc?: string;
-    intervalSeconds: number;
+    cycleSeconds: number;
+    offsetSeconds: number;
     holdSeconds: number;
 }
 
 export const PromoPopup: React.FC<PromoPopupProps> = ({
     text,
     iconSrc = 'spotify.svg',
-    intervalSeconds,
+    cycleSeconds = 40,
+    offsetSeconds = 0,
     holdSeconds
 }) => {
     const frame = useCurrentFrame();
@@ -26,13 +28,14 @@ export const PromoPopup: React.FC<PromoPopupProps> = ({
     // [4+holdSeconds]s - [6+holdSeconds]s (Phase 4): Text slides IN RIGHT back to icon
     // [6+holdSeconds]s - [8+holdSeconds]s (Phase 5): Icon rolls OUT RIGHT 
 
+    // Total animation time is exactly 8 seconds of movement + holdSeconds of pause
     const totalAnimationSeconds = 8 + holdSeconds;
 
-    // The cycle must be at least interval + 10s
-    const cycleFrames = Math.max(intervalSeconds + totalAnimationSeconds, totalAnimationSeconds) * fps;
-    const currentModuloFrame = frame % cycleFrames;
+    // Use a strict synchronized timeline
+    const cycleFrames = cycleSeconds * fps;
+    const currentModuloFrame = (frame + cycleFrames * 1000) % cycleFrames;
 
-    const activeStartFrame = intervalSeconds * fps;
+    const activeStartFrame = offsetSeconds * fps;
     const activeEndFrame = activeStartFrame + (totalAnimationSeconds * fps);
     const isActive = currentModuloFrame >= activeStartFrame && currentModuloFrame < activeEndFrame;
 
@@ -67,12 +70,12 @@ export const PromoPopup: React.FC<PromoPopupProps> = ({
     const textInT = interpolate(textInPhase, [0, framesPerPhase], [0, 1], { easing: smoothEasing, extrapolateRight: 'clamp' });
     const iconOutT = interpolate(iconOutPhase, [0, framesPerPhase], [0, 1], { easing: smoothEasing, extrapolateRight: 'clamp' });
 
-    // Sizing 
-    const iconSize = 84;
-    const pillHeight = 60;
-    const fontSize = 24;
-    const paddingRight = 60;
-    const paddingLeft = 30;
+    // Sizing (Reduced by 10% from the previous 120 base)
+    const iconSize = 108;     // 120 * 0.9 = 108
+    const pillHeight = 77;    // 86 * 0.9 = 77
+    const fontSize = 31;      // 35 * 0.9 = 31.5
+    const paddingRight = 77;  // 86 * 0.9 = 77
+    const paddingLeft = 38;   // 43 * 0.9 = 38.7
 
     // Translations
     // Icon slides in from +600px -> 0px. Then stays. Then slides out 0 -> +600px.

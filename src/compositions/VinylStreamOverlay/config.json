@@ -5,7 +5,7 @@
     },
     "audioTrack": {
         "type": "audio",
-        "src": "track_short.mp3"
+        "src": "track.mp3"
     },
     "_help": {
         "vinylSizePercent": "Размер вращающегося источника в % от базового размера 250px. 50 = 125px",
@@ -63,10 +63,18 @@
     },
     "promo": {
         "enabled": true,
-        "text": "Listen us on Spotify",
+        "text": "LISTEN US ON SPOTIFY",
         "icon": "spotify.svg",
-        "intervalSeconds": 20,
+        "cycleSeconds": 40,
+        "offsetSeconds": 0,
         "holdSeconds": 4
+    },
+    "vcrPrompt": {
+        "enabled": true,
+        "text": "> FORGED_BY_PHONK",
+        "cycleSeconds": 40,
+        "offsetSeconds": 20,
+        "holdSeconds": 5
     },
     "glitch": {
         "enabled": true,

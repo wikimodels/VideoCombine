@@ -9,6 +9,7 @@ import { DefaultVinyl as VinylSVG } from './assets/VinylGraphic';
 import { SkullGraphic } from './assets/SkullGraphic';
 import { CrosshairGraphic } from './assets/CrosshairGraphic';
 import { PromoPopup } from './PromoPopup';
+import { VCRPrompt } from './VCRPrompt';
 
 export const VINYL_STREAM_FPS = 30;
 export const VINYL_STREAM_DURATION = 30 * 15; // default 15 sec if not bounded
@@ -837,8 +838,19 @@ const VinylStreamOverlay: React.FC = () => {
                 <PromoPopup
                     text={(cfg as any).promo.text || 'Listen on Spotify'}
                     iconSrc={(cfg as any).promo.icon || 'spotify.svg'}
-                    intervalSeconds={(cfg as any).promo.intervalSeconds || 20}
+                    cycleSeconds={(cfg as any).promo.cycleSeconds || 40}
+                    offsetSeconds={(cfg as any).promo.offsetSeconds || 0}
                     holdSeconds={(cfg as any).promo.holdSeconds || 4}
+                />
+            )}
+
+            {/* VCR Prompt (Terminal style text popup) */}
+            {(cfg as any).vcrPrompt?.enabled && (
+                <VCRPrompt
+                    text={(cfg as any).vcrPrompt.text || '> FOLLOW US ON SPOTIFY_'}
+                    cycleSeconds={(cfg as any).vcrPrompt.cycleSeconds || 40}
+                    offsetSeconds={(cfg as any).vcrPrompt.offsetSeconds || 20}
+                    holdSeconds={(cfg as any).vcrPrompt.holdSeconds || 5}
                 />
             )}
 
@@ -852,9 +864,11 @@ const VinylStreamOverlay: React.FC = () => {
                     // Soft vignette at the edges, bright in the center
                     background: `
                         radial-gradient(circle at center, transparent 50%, rgba(0, 0, 0, 0.6) 100%),
-                        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%)
+                        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.18) 50%)
                     `,
                     backgroundSize: '100% 100%, 100% 4px', // Vignette stretches, scanlines repeat
+                    // Slowly drift the scanlines vertically to make it feel "alive"
+                    backgroundPosition: `center, 0 ${(frame * 0.4) % 4}px`,
                 }} />
             )}
         </AbsoluteFill>
