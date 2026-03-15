@@ -5,7 +5,7 @@ import { useAudioData, visualizeAudio } from '@remotion/media-utils';
 export const PepeStormFlyer: React.FC = () => {
     const frame = useCurrentFrame();
     const { fps, width, height } = useVideoConfig();
-    const audioUrl = staticFile('track.mp3');
+    const audioUrl = staticFile('audio/track.mp3');
     const audioData = useAudioData(audioUrl);
 
     if (!audioData) return <AbsoluteFill style={{ backgroundColor: '#010005' }} />;

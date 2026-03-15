@@ -15,7 +15,7 @@ const PLASMA_GLOW_SIDE = '#ff0055'; // Pink/Red for side engines
 export const CybercoreBreach: React.FC = () => {
     const frame = useCurrentFrame();
     const { fps, width, height } = useVideoConfig();
-    const audioUrl = staticFile('track.mp3');
+    const audioUrl = staticFile('audio/track.mp3');
     const audioData = useAudioData(audioUrl);
 
     // Stars background generator (memoized so it's stable)

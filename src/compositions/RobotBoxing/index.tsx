@@ -121,7 +121,7 @@ export const RobotBoxing: React.FC = () => {
                     {/* ROBOT 1 */}
 
                     {/* Base image (fading this out for now to see what's masked) */}
-                    <image href={staticFile("Robo_1.svg")} width="1024" height="1792" opacity={0.1} />
+                    <image href={staticFile('icons/Robo_1.svg')} width="1024" height="1792" opacity={0.1} />
 
                     {/* Body (everything except arms) */}
                     <clipPath id="body-clip-1" clipPathUnits="userSpaceOnUse">
@@ -131,7 +131,7 @@ export const RobotBoxing: React.FC = () => {
                             M 560 180 L 590 190 L 490 470 L 230 550 L 500 340 Z
                          " clipRule="evenodd" fillRule="evenodd" />
                     </clipPath>
-                    <image href={staticFile("Robo_1.svg")} width="1024" height="1792" clipPath="url(#body-clip-1)" />
+                    <image href={staticFile('icons/Robo_1.svg')} width="1024" height="1792" clipPath="url(#body-clip-1)" />
 
                     {/* Back Arm */}
                     <MaskedRobotPart
@@ -155,7 +155,7 @@ export const RobotBoxing: React.FC = () => {
 
                 <g transform={`translate(${robo2X + shakeX}, ${robo2Y + shakeY}) rotate(${robo2Rotation}) scale(0.6)`} style={{ transformOrigin: '200px 300px' }}>
                     {/* ROBOT 2 */}
-                    <image href={staticFile("Robo_2.svg")} width="1024" height="1792" opacity={0.1} />
+                    <image href={staticFile('icons/Robo_2.svg')} width="1024" height="1792" opacity={0.1} />
 
                     <clipPath id="body-clip-2" clipPathUnits="userSpaceOnUse">
                         <path d="
@@ -163,7 +163,7 @@ export const RobotBoxing: React.FC = () => {
                             M 560 180 L 590 190 L 490 470 L 230 550 L 500 340 Z
                          " clipRule="evenodd" fillRule="evenodd" />
                     </clipPath>
-                    <image href={staticFile("Robo_2.svg")} width="1024" height="1792" clipPath="url(#body-clip-2)" opacity={reactionImpact > 0.1 && reactionImpact < 0.9 && frame % 2 === 0 ? 0.5 : 1} />
+                    <image href={staticFile('icons/Robo_2.svg')} width="1024" height="1792" clipPath="url(#body-clip-2)" opacity={reactionImpact > 0.1 && reactionImpact < 0.9 && frame % 2 === 0 ? 0.5 : 1} />
 
                     {/* Back Arm */}
                     <MaskedRobotPart

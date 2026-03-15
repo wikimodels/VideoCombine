@@ -1,0 +1,92 @@
+{
+    "$schema": "../../../settings/schema.json",
+    "projectInfo": {
+        "name": "VinylStreamOverlay"
+    },
+    "audioTrack": {
+        "type": "audio",
+        "src": "track.mp3"
+    },
+    "_help": {
+        "vinylSizePercent": "Размер вращающегося источника в % от базового размера 250px. 50 = 125px",
+        "position": "Позиция источника. Сейчас: bottom-left",
+        "vinylSrc": "Имя файла SVG/PNG для вращающегося источника (из папки assets/)",
+        "originScale": "Масштаб SVG внутри круга источника. 1.0 = по размеру круга, 1.5 = увеличен на 50%",
+        "originBackgroundColor": "Цвет фона круга источника. Любой CSS цвет. 'transparent' = без фона",
+        "particleSrc": "Имя SVG файла для частиц (из assets/). Используется как CSS-маска с динамическим цветом",
+        "particleSpeed": "Скорость полёта частиц. 1.0 = быстро, 0.5 = вдвое медленнее, 0.2 = очень плавно",
+        "particleMaxHeight": "Максимальная высота подъёма частиц. 1.0 = до вершины канваса, 0.75 = до 75% высоты. Частицы гаснут ДО этой точки (за счёт particleFadeStart)",
+        "particleSpreadStart": "С какого прогресса начинается боковой разлёт (0-1). 0.0 = сразу от источника, 0.3 = на трети пути",
+        "particleSpreadAmplitude": "Ширина разлёта (множитель). 1.0 = узкий, 4 = широкий веер, 8 = очень широко",
+        "particleFadeStart": "С какого прогресса начинается угасание (0-1). 0.4 = гаснут рано, 0.7 = долго видны",
+        "particleDecelerationStrength": "Сила торможения (0-1). 0 = постоянная скорость, 0.5 = умеренное замедление, 1.0 = почти зависают",
+        "rotationSpeed": "Скорость вращения источника в градусах за кадр. 2 = медленно, 5 = быстро",
+        "colors": "Массив цветов частиц (CSS hex). Каждая частица случайно берёт цвет из этого списка"
+    },
+    "overlay": {
+        "vinylSizePercent": 50,
+        "position": "bottom-left",
+        "vinylSrc": "soldier_4.svg",
+        "originScale": 1.5,
+        "originBackgroundColor": "red",
+        "particleSrc": "skull.svg",
+        "particleSpeed": 0.2,
+        "particleMaxHeight": 0.95,
+        "particleFadeRange": 0.4,
+        "particleSpreadStart": 0.02,
+        "particleSpreadAmplitude": 4,
+        "particleFadeStart": 0.65,
+        "particleDecelerationStrength": 0.5,
+        "rotationSpeed": 2,
+        "colors": [
+            "#4caf50",
+            "#ff9800",
+            "#e91e63",
+            "#f44336",
+            "#2196f3"
+        ]
+    },
+    "equalizer": {
+        "enabled": true,
+        "bands": 120,
+        "freqMin": 60,
+        "freqMax": 16000,
+        "color": "#e91e63",
+        "secondaryColor": "#ff9800",
+        "height": 134,
+        "barWidth": 8,
+        "barGap": 3,
+        "cornerRadius": 2,
+        "decayFactor": 0.96,
+        "attackFactor": 0.20,
+        "bottom": 55
+    },
+    "promo": {
+        "enabled": true,
+        "text": "LISTEN US ON SPOTIFY",
+        "icon": "spotify.svg",
+        "cycleSeconds": 40,
+        "offsetSeconds": 0,
+        "holdSeconds": 4
+    },
+    "vcrPrompt": {
+        "enabled": true,
+        "text": "> FORGED_BY_PHONK",
+        "cycleSeconds": 40,
+        "offsetSeconds": 20,
+        "holdSeconds": 5
+    },
+    "glitch": {
+        "enabled": true,
+        "image": "boy_1.jpg",
+        "intensity": 1.0,
+        "tearProbability": 0.005,
+        "enableDigitalTear": true,
+        "gridProbability": 0.005,
+        "enableStaticGrid": true,
+        "enableTrackingRoll": true,
+        "enableRGBBreathing": true,
+        "enableCRTVignette": true,
+        "scanlines": true
+    }
+}

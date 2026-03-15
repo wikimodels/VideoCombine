@@ -53,6 +53,7 @@ export interface VCRConfig {
   cycleSeconds?: number;
   offsetSeconds?: number;
   holdSeconds?: number;
+  background?: string;
 }
 
 export interface GlitchConfig {
@@ -70,11 +71,24 @@ export interface GlitchConfig {
   scanlines?: boolean;
 }
 
+export interface NeonAuraConfig {
+  /** Path relative to public/, e.g. 'icons/sniper_1.svg' */
+  graphic?: string;
+  baseColor?: string;
+  accentColor?: string;
+  /** Size in pixels */
+  size?: number;
+  x?: string;
+  y?: string;
+}
+
 export interface RenderJob {
   /** Unique ID → composition name in Remotion Studio + output filename */
   id: string;
   /** Which composition template to use */
-  composition: 'VinylStreamOverlay';
+  composition: 'VinylStreamOverlay' | 'EtherAmbient' | 'LiquidCrystalScene' | 'NeonAuraScene';
+  /** Video format: 'landscape' (1920x1080) or 'portrait' (1080x1920). Defaults to landscape. */
+  format?: 'landscape' | 'portrait';
   /** Duration override in seconds. If omitted, auto-detected from audio length */
   durationSec?: number;
 
@@ -99,4 +113,5 @@ export interface RenderJob {
   promo?: PromoConfig;
   vcr?: VCRConfig;
   glitch?: GlitchConfig;
+  neonAura?: NeonAuraConfig;
 }

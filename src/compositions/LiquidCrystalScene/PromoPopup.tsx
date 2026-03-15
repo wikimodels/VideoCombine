@@ -143,14 +143,13 @@ export const PromoPopup: React.FC<PromoPopupProps> = ({
                             width: '100%',
                             height: '100%',
                             backgroundImage: `url('${iconUrl}')`,
-                            backgroundSize: '100% 100%',
+                            backgroundSize: 'contain',
                             backgroundRepeat: 'no-repeat',
                             backgroundPosition: 'center',
-                            clipPath: 'circle(48.5% at 50% 50%)',
                             // Soft drop shadow directly on the SVG shape
                             filter: 'drop-shadow(0 6px 15px rgba(29, 185, 84, 0.5))',
                             // The rotation is tied directly to the travel distance
-                            transform: `rotate(${iconRotation}deg) scale(1.02)`
+                            transform: `rotate(${iconRotation}deg)`
                         }} />
                     ) : (
                         // Fallback circle if icon fails

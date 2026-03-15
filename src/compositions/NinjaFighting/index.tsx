@@ -14,7 +14,7 @@ export const NinjaFighting: React.FC = () => {
     const { fps } = useVideoConfig();
 
     // ─── Audio Data & Frequency Analysis ───
-    const audioData = useAudioData(staticFile('track.mp3'));
+    const audioData = useAudioData(staticFile('audio/track.mp3'));
     const viz = audioData ? visualizeAudio({ fps, frame: rawFrame, audioData, numberOfSamples: 32 }) : new Array(32).fill(0);
 
     // Bass (0-3) and Mid (10-15)
@@ -71,7 +71,7 @@ export const NinjaFighting: React.FC = () => {
 
     return (
         <AbsoluteFill style={{ backgroundColor: '#050508' }}>
-            <Audio src={staticFile('track.mp3')} />
+            <Audio src={staticFile('audio/track.mp3')} />
 
             {/* Simple Floor Line */}
             <div style={{ position: 'absolute', bottom: H - FLOOR_Y, width: W, height: 2, backgroundColor: '#222' }} />

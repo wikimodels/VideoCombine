@@ -17,7 +17,7 @@ const sr = (seed: number) => Math.abs(Math.sin(seed * 127.1 + 97.3));
 export const RetroGameScene: React.FC = () => {
     const frame = useCurrentFrame();
     const { fps, width, height, durationInFrames } = useVideoConfig();
-    const audioUrl = staticFile('track.mp3');
+    const audioUrl = staticFile('audio/track.mp3');
     const audioData = useAudioData(audioUrl);
 
     const SHIP_Y_BASE = height - GROUND_HEIGHT - 20;

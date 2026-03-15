@@ -171,7 +171,7 @@ const UfoSvg: React.FC<{ cx: number; cy: number; bass: number; firing: boolean }
 export const UfoCityAttack: React.FC = () => {
     const frame = useCurrentFrame();
     const { fps, width, height } = useVideoConfig();
-    const audioFile = staticFile('track.mp3');
+    const audioFile = staticFile('audio/track.mp3');
     const audioData = useAudioData(audioFile);
     const skyBackground = 'linear-gradient(to bottom, #060618 0%, #1a0633 45%, #2a0a4d 100%)';
 

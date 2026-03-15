@@ -6,7 +6,7 @@ export const SynthwaveRacer: React.FC = () => {
     const frame = useCurrentFrame();
     // Default TikTok/Shorts 1080x1920
     const { fps, width, height } = useVideoConfig();
-    const audioUrl = staticFile('track.mp3');
+    const audioUrl = staticFile('audio/track.mp3');
     const audioData = useAudioData(audioUrl);
 
     if (!audioData) return <AbsoluteFill style={{ backgroundColor: '#020010' }} />;

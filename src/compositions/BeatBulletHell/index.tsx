@@ -9,7 +9,7 @@ const MAX_BULLET_AGE_SEC = 3.5;
 export const BeatBulletHell: React.FC = () => {
     const frame = useCurrentFrame();
     const { fps, width, height } = useVideoConfig();
-    const audioUrl = staticFile('track.mp3');
+    const audioUrl = staticFile('audio/track.mp3');
     const audioData = useAudioData(audioUrl);
 
     if (!audioData) return <AbsoluteFill style={{ backgroundColor: '#000' }} />;

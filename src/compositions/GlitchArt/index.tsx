@@ -15,8 +15,8 @@ const NUM_BARS = 32;
 export const GlitchArt: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
-  const audioUrl = staticFile('track.mp3');
-  const imgUrl = staticFile('forged.jpg');
+  const audioUrl = staticFile('audio/track.mp3');
+  const imgUrl = staticFile('images/forged.jpg');
 
   const audioData = useAudioData(audioUrl);
 

@@ -39,7 +39,7 @@ const GlowDot: React.FC<{
 
 // ── Background Skulls (Blinking & Reacting) ──────────────────────────────────
 const BackgroundSkulls: React.FC<{ width: number; height: number; frame: number; bass: number }> = ({ width, height, frame, bass }) => {
-    const skullSrc = staticFile('skull.svg');
+    const skullSrc = staticFile('icons/skull.svg');
     const { fps } = useVideoConfig(); // Needed for second-based timings
 
     // 3 rows x 4 columns grid with slight organic offset
@@ -137,7 +137,7 @@ const BackgroundSkulls: React.FC<{ width: number; height: number; frame: number;
 export const DevilDancer: React.FC = () => {
     const frame = useCurrentFrame();
     const { fps, width, height } = useVideoConfig();
-    const audioUrl = staticFile('track.mp3');
+    const audioUrl = staticFile('audio/track.mp3');
     const audioData = useAudioData(audioUrl);
 
     if (!audioData) return <AbsoluteFill style={{ backgroundColor: '#0a0000' }} />;

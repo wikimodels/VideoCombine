@@ -18,7 +18,7 @@ const getHexPoints = (cx: number, cy: number, r: number) => {
 export const CyberDrummer: React.FC = () => {
     const frame = useCurrentFrame();
     const { fps, width, height } = useVideoConfig();
-    const audioUrl = staticFile('track.mp3');
+    const audioUrl = staticFile('audio/track.mp3');
     const audioData = useAudioData(audioUrl);
 
     // --- NEURAL NETWORK MESH ---

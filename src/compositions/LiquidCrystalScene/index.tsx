@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useCurrentFrame, useVideoConfig, Audio, AbsoluteFill, random, staticFile } from 'remotion';
 import { useAudioData } from '@remotion/media-utils';
-import { interpolate, Easing, Img } from 'remotion';
+import { interpolate, Easing, Img, spring } from 'remotion';
 
 import type { RenderJob } from '../../shared/types/pipeline';
 
@@ -44,19 +44,19 @@ const getAssetUrl = (path: string): string | null => {
     return staticFile(path);
 };
 
-interface VinylStreamOverlayProps {
+interface LiquidCrystalSceneProps {
     job?: RenderJob; // Optional: Remotion defaultProps fills this at runtime
 }
 
 /** Fallback when no job is passed (e.g. Remotion instantiates with empty props) */
 const NOOP_JOB: RenderJob = {
     id: 'noop',
-    composition: 'VinylStreamOverlay',
+    composition: 'LiquidCrystalScene',
     audio: '',
     particles: {},
 };
 
-const VinylStreamOverlay: React.FC<VinylStreamOverlayProps> = ({ job = NOOP_JOB }) => {
+const LiquidCrystalScene: React.FC<LiquidCrystalSceneProps> = ({ job = NOOP_JOB }) => {
     const frame = useCurrentFrame();
     const { fps, durationInFrames, height, width: canvasWidth } = useVideoConfig();
 
@@ -91,9 +91,9 @@ const VinylStreamOverlay: React.FC<VinylStreamOverlayProps> = ({ job = NOOP_JOB 
     const audioUrl = audio ? getAssetUrl(audio) : null;
     const audioData = useAudioData(audioUrl || '');
 
-    // ── Physics Engine: Pre-calculate all particle spawns (Deterministic O(1)) ──
+    // ── Physics Engine: Pre-calculate all particle spawns & color shfits (Deterministic O(1)) ──
     const engine = useMemo(() => {
-        if (!audioData) return { hearts: [], eqData: null, eqBands: 0, glitchFrames: null };
+        if (!audioData) return { hearts: [], eqData: null, eqBands: 0, glitchFrames: null, bassEnergyArray: new Float32Array(0), trebleEnergyArray: new Float32Array(0) };
 
         const hearts: HeartParams[] = [];
         let hId = 0;
@@ -185,8 +185,59 @@ const VinylStreamOverlay: React.FC<VinylStreamOverlayProps> = ({ job = NOOP_JOB 
             }
         }
 
+        // Pass 3: Liquid Color Shifting (Smoothed Bass Envelope)
+        const bassEnergyArray = new Float32Array(totalFrames);
+        const attack = 0.2;
+        const decay = 0.95;
+        for (let f = 0; f < totalFrames; f++) {
+            const raw = rawEnergy[f];
+            const prev = f > 0 ? bassEnergyArray[f - 1] : 0;
+            // Normalize raw energy based on global maxEnergy
+            const normalized = maxEnergy > 0 ? (raw / maxEnergy) : 0;
+            // Heavy attack for punchiness, smooth decay for liquid feel
+            bassEnergyArray[f] = normalized > prev
+                 ? prev + (normalized - prev) * attack
+                 : prev * decay;
+        }
+
+        // Pass 4: Treble Energy (4kHz – 16kHz) for distortion effect
+        // NOTE: Must be computed BEFORE the EQ early-return so it’s always available.
+        const trebleEnergyArray = new Float32Array(totalFrames);
+        {
+            const trebleMinHz = 4000;
+            const trebleMaxHz = 16000;
+            const sr2 = audioData.sampleRate;
+            const FFT2 = 2048;
+            const hann2 = new Float32Array(FFT2);
+            for (let k = 0; k < FFT2; k++) hann2[k] = 0.5 * (1 - Math.cos(2 * Math.PI * k / (FFT2 - 1)));
+            const re2 = new Float32Array(FFT2); const im2 = new Float32Array(FFT2);
+            const wv2 = audioData.channelWaveforms[0];
+            const binLo2 = Math.max(1, Math.round(trebleMinHz * FFT2 / sr2));
+            const binHi2 = Math.min(FFT2 / 2 - 1, Math.round(trebleMaxHz * FFT2 / sr2));
+            let maxT2 = 0.0001;
+            const rawT2 = new Float32Array(totalFrames);
+            for (let f = 0; f < totalFrames; f++) {
+                const start = Math.max(0, f * frameSamples - FFT2 / 2);
+                for (let k = 0; k < FFT2; k++) { re2[k] = (wv2[start + k] ?? 0) * hann2[k]; im2[k] = 0; }
+                // Cooley-Tukey in-place
+                const n = FFT2;
+                for (let i = 1, j = 0; i < n; i++) { let bit = n >> 1; for (; j & bit; bit >>= 1) j ^= bit; j ^= bit; if (i < j) { let t = re2[i]; re2[i] = re2[j]; re2[j] = t; t = im2[i]; im2[i] = im2[j]; im2[j] = t; } }
+                for (let len = 2; len <= n; len <<= 1) { const ang = (-2 * Math.PI) / len; const wRe = Math.cos(ang), wIm = Math.sin(ang); for (let i = 0; i < n; i += len) { let cRe = 1, cIm = 0; for (let k = 0; k < len >> 1; k++) { const a = i+k, b = i+k+(len>>1); const vRe = re2[b]*cRe - im2[b]*cIm; const vIm = re2[b]*cIm + im2[b]*cRe; re2[b] = re2[a]-vRe; im2[b] = im2[a]-vIm; re2[a] += vRe; im2[a] += vIm; const nRe = cRe*wRe - cIm*wIm; cIm = cRe*wIm+cIm*wRe; cRe = nRe; } } }
+                let sum = 0, cnt = 0;
+                for (let k = binLo2; k <= binHi2; k++) { sum += Math.sqrt(re2[k]*re2[k] + im2[k]*im2[k]); cnt++; }
+                rawT2[f] = cnt > 0 ? sum / cnt / FFT2 : 0;
+                if (rawT2[f] > maxT2) maxT2 = rawT2[f];
+            }
+            const tAtt = 0.4, tDec = 0.88;
+            for (let f = 0; f < totalFrames; f++) {
+                const norm = rawT2[f] / maxT2;
+                const prev = f > 0 ? trebleEnergyArray[f - 1] : 0;
+                trebleEnergyArray[f] = norm > prev ? prev + (norm - prev) * tAtt : prev * tDec;
+            }
+        }
+
         // ── Equalizer Engine ─────────────────────────────────────────────────────
-        if (!eqCfg?.enabled) return { hearts, eqData: null, eqBands: 0, glitchFrames: null };
+        if (!eqCfg?.enabled) return { hearts, eqData: null, eqBands: 0, glitchFrames: null, bassEnergyArray, trebleEnergyArray };
 
         const eqBands: number = eqCfg.bands ?? 64;
         const freqMin: number = eqCfg.freqMin ?? 60;
@@ -409,7 +460,7 @@ const VinylStreamOverlay: React.FC<VinylStreamOverlayProps> = ({ job = NOOP_JOB 
             }
         }
 
-        return { hearts, eqData: smoothEq, eqBands, glitchFrames };
+        return { hearts, eqData: smoothEq, eqBands, glitchFrames, bassEnergyArray, trebleEnergyArray };
     }, [audioData, fps, durationInFrames, particleSpeed, particleSpreadAmplitude, particleColors, eqCfg, glitchCfg]);
 
     // ── Layout ───────────────────────────────────────────────────────────────────
@@ -447,10 +498,90 @@ const VinylStreamOverlay: React.FC<VinylStreamOverlayProps> = ({ job = NOOP_JOB 
             {(() => {
                 if (!imgUrl) return null;
                 if (!glitchCfg?.enabled || !engine.glitchFrames) {
-                    return <Img src={imgUrl} style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }} />;
+                    // ── Liquid Color Shifting (bass) + Treble Distortion ───────────────
+                    const bassArr2 = engine.bassEnergyArray || [];
+                    const bassE = bassArr2[Math.min(frame, Math.max(0, bassArr2.length - 1))] || 0;
+                    const trebleArr = engine.trebleEnergyArray || [];
+                    const trebleE = trebleArr[Math.min(frame, Math.max(0, trebleArr.length - 1))] || 0;
+
+                    // Bass springs
+                    const punchE = spring({ frame, fps, config: { damping: 8, stiffness: 200, mass: 0.6 }, durationInFrames: 6, from: 0, to: bassE });
+                    const driftE  = spring({ frame, fps, config: { damping: 30, stiffness: 40,  mass: 2.0 }, durationInFrames: 20, from: 0, to: bassE });
+                    // Treble spring — fast and nervous
+                    const trebleSpring = spring({ frame, fps, config: { damping: 6, stiffness: 300, mass: 0.4 }, durationInFrames: 4, from: 0, to: trebleE });
+
+                    // Color shifting (bass)
+                    const bgHue = interpolate(driftE,  [0, 1], [0, 360], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+                    const bgSat = interpolate(punchE,  [0, 1], [120, 260], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+                    const bgBri = interpolate(punchE,  [0, 0.6, 1], [95, 115, 135], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+                    const bgGlowH = (bgHue + 30) % 360;
+                    const bgGlowA = interpolate(punchE, [0, 1], [0, 0.35], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+
+                    // Treble distortion params
+                    const rgbShift = interpolate(trebleSpring, [0, 1], [0, 14], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+                    const contrastBoost = interpolate(trebleSpring, [0, 1], [100, 180], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+                    const vignetteA = interpolate(trebleSpring, [0, 1], [0, 0.6], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+                    const baseImgStyle: React.CSSProperties = {
+                        position: 'absolute', width: '100%', height: '100%', objectFit: 'cover',
+                    };
+
+                    return (
+                        <AbsoluteFill style={{ zIndex: 0 }}>
+                            {/* Base image with Liquid Color Shifting */}
+                            <Img src={imgUrl} style={{
+                                ...baseImgStyle,
+                                filter: `hue-rotate(${bgHue}deg) saturate(${bgSat}%) brightness(${bgBri}%) contrast(${contrastBoost}%)`,
+                            }} />
+
+                            {/* RGB channel split — RED shifted right on treble */}
+                            {trebleSpring > 0.05 && (
+                                <Img src={imgUrl} style={{
+                                    ...baseImgStyle,
+                                    transform: `translateX(${rgbShift}px)`,
+                                    mixBlendMode: 'screen',
+                                    opacity: interpolate(trebleSpring, [0.05, 1], [0, 0.55], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }),
+                                    filter: `hue-rotate(${bgHue}deg) saturate(400%) brightness(120%) sepia(1) hue-rotate(330deg)`,
+                                }} />
+                            )}
+
+                            {/* RGB channel split — CYAN shifted left on treble */}
+                            {trebleSpring > 0.05 && (
+                                <Img src={imgUrl} style={{
+                                    ...baseImgStyle,
+                                    transform: `translateX(${-rgbShift}px)`,
+                                    mixBlendMode: 'screen',
+                                    opacity: interpolate(trebleSpring, [0.05, 1], [0, 0.45], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }),
+                                    filter: `hue-rotate(${bgHue + 180}deg) saturate(300%) brightness(120%)`,
+                                }} />
+                            )}
+
+                            {/* Vignette that tightens on treble hits */}
+                            <div style={{
+                                position: 'absolute', inset: 0,
+                                background: `radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,${vignetteA}) 100%)`,
+                                pointerEvents: 'none',
+                            }} />
+
+                            {/* Bass glow overlay */}
+                            <div style={{
+                                position: 'absolute', inset: 0,
+                                background: `radial-gradient(ellipse at center, hsla(${bgGlowH}, 100%, 60%, ${bgGlowA}) 0%, transparent 70%)`,
+                                mixBlendMode: 'screen',
+                                pointerEvents: 'none',
+                            }} />
+                        </AbsoluteFill>
+                    );
                 }
                 const enableRGBBreathing = glitchCfg.enableRGBBreathing !== false;
                 const rgbBreathSplit = enableRGBBreathing ? Math.sin(frame * 0.05) * 2 : 0;
+
+                // Liquid Color Shifting — bass drives hue drift
+                const bassArrG = engine.bassEnergyArray || [];
+                const bassEG = bassArrG[Math.min(frame, Math.max(0, bassArrG.length - 1))] || 0;
+                const driftEG = spring({ frame, fps, config: { damping: 30, stiffness: 40, mass: 2.0 }, durationInFrames: 20, from: 0, to: bassEG });
+                const glitchHue = interpolate(driftEG, [0, 1], [0, 360], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+                const glitchSat = interpolate(bassEG, [0, 1], [110, 220], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+
                 const frameData = engine.glitchFrames[frame] || {
                     tearBlocks: [], gridActive: false, gridJitterX: 0, gridJitterY: 0,
                     trackingRollMode: false, trackingRollOffset: 0,
@@ -465,9 +596,8 @@ const VinylStreamOverlay: React.FC<VinylStreamOverlayProps> = ({ job = NOOP_JOB 
                 const baseYShift = (isTearing || isGridActive)
                     ? (random(`g-yshift-global-${frame}`) - 0.5) * 30
                     : 0;
-                const baseFilter = (isTearing || isGridActive)
-                    ? `contrast(${isGridActive ? 150 : 120}%) saturate(${isTearing ? 150 : 80}%) ${isTearing ? `hue-rotate(${Math.random() * 90 - 45}deg)` : ''}`
-                    : 'none';
+                // Always apply Liquid hue-rotate; amplify on glitch events
+                const baseFilter = `hue-rotate(${glitchHue}deg) saturate(${glitchSat}%) contrast(${isGridActive ? 150 : 120}%) ${isTearing ? `brightness(130%)` : ''}`;
 
                 return (
                     <AbsoluteFill style={{ zIndex: 0 }}>
@@ -732,4 +862,4 @@ const VinylStreamOverlay: React.FC<VinylStreamOverlayProps> = ({ job = NOOP_JOB 
     );
 };
 
-export default VinylStreamOverlay;
+export default LiquidCrystalScene;

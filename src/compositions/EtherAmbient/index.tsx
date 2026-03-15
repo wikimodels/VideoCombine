@@ -1,20 +1,20 @@
 import React, { useMemo } from 'react';
 import { useCurrentFrame, useVideoConfig, Audio, AbsoluteFill, random, staticFile } from 'remotion';
-import { useAudioData } from '@remotion/media-utils';
+import { useAudioData, visualizeAudio } from '@remotion/media-utils';
 import { interpolate, Easing, Img } from 'remotion';
 
 import type { RenderJob } from '../../shared/types/pipeline';
 
 // Fallback built-in graphics (for legacy / manual usage)
-import { DefaultVinyl as VinylSVG } from './assets/VinylGraphic';
-import { CrosshairGraphic } from './assets/CrosshairGraphic';
-import { PromoPopup } from './PromoPopup';
+import { DefaultVinyl as VinylSVG } from '../VinylStreamOverlay/assets/VinylGraphic';
+import { CrosshairGraphic } from '../VinylStreamOverlay/assets/CrosshairGraphic';
+import { PromoPopup } from '../VinylStreamOverlay/PromoPopup';
 import { VCRPrompt } from '../shared/VCRPrompt';
 
-export const VINYL_STREAM_FPS = 30;
-export const VINYL_STREAM_DURATION = 30 * 15;
-export const VINYL_STREAM_WIDTH = 1920;
-export const VINYL_STREAM_HEIGHT = 1080;
+export const ETHER_AMBIENT_FPS = 30;
+export const ETHER_AMBIENT_DURATION = 30 * 15;
+export const ETHER_AMBIENT_WIDTH = 1920;
+export const ETHER_AMBIENT_HEIGHT = 1080;
 
 type HeartParams = {
     id: number;
@@ -32,31 +32,22 @@ type HeartParams = {
 /** Resolve asset from public/ via staticFile(), fallback to legacy local require */
 const getAssetUrl = (path: string): string | null => {
     if (!path) return null;
-    // If it's a bare filename (legacy), try local assets/ first
-    if (!path.includes('/')) {
-        try {
-            const asset = require(`./assets/${path}`);
-            return typeof asset === 'string' ? asset : asset.default;
-        } catch {
-            // not found locally — fall through to staticFile
-        }
-    }
     return staticFile(path);
 };
 
-interface VinylStreamOverlayProps {
+export interface EtherAmbientProps {
     job?: RenderJob; // Optional: Remotion defaultProps fills this at runtime
 }
 
 /** Fallback when no job is passed (e.g. Remotion instantiates with empty props) */
 const NOOP_JOB: RenderJob = {
     id: 'noop',
-    composition: 'VinylStreamOverlay',
+    composition: 'EtherAmbient',
     audio: '',
     particles: {},
 };
 
-const VinylStreamOverlay: React.FC<VinylStreamOverlayProps> = ({ job = NOOP_JOB }) => {
+export const EtherAmbient: React.FC<EtherAmbientProps> = ({ job = NOOP_JOB }) => {
     const frame = useCurrentFrame();
     const { fps, durationInFrames, height, width: canvasWidth } = useVideoConfig();
 
@@ -443,117 +434,55 @@ const VinylStreamOverlay: React.FC<VinylStreamOverlayProps> = ({ job = NOOP_JOB 
         <AbsoluteFill style={{ overflow: 'hidden', backgroundColor: '#000' }}>
             {audioUrl && <Audio src={audioUrl} />}
 
-            {/* ── Background Glitch Layer ─────────────────────────────────────────── */}
+            {/* ── Background VHS Layer ─────────────────────────────────────────── */}
             {(() => {
                 if (!imgUrl) return null;
-                if (!glitchCfg?.enabled || !engine.glitchFrames) {
-                    return <Img src={imgUrl} style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }} />;
-                }
-                const enableRGBBreathing = glitchCfg.enableRGBBreathing !== false;
-                const rgbBreathSplit = enableRGBBreathing ? Math.sin(frame * 0.05) * 2 : 0;
-                const frameData = engine.glitchFrames[frame] || {
-                    tearBlocks: [], gridActive: false, gridJitterX: 0, gridJitterY: 0,
-                    trackingRollMode: false, trackingRollOffset: 0,
-                };
-                const blocks = frameData.tearBlocks;
-                const isGridActive = frameData.gridActive;
-                const isTrackingRoll = frameData.trackingRollMode;
-                const baseStyle: React.CSSProperties = {
-                    position: 'absolute', width: '100%', height: '100%', objectFit: 'cover',
-                };
-                const isTearing = blocks.length > 0;
-                const baseYShift = (isTearing || isGridActive)
-                    ? (random(`g-yshift-global-${frame}`) - 0.5) * 30
-                    : 0;
-                const baseFilter = (isTearing || isGridActive)
-                    ? `contrast(${isGridActive ? 150 : 120}%) saturate(${isTearing ? 150 : 80}%) ${isTearing ? `hue-rotate(${Math.random() * 90 - 45}deg)` : ''}`
-                    : 'none';
+                
+                // VHS Audio Reactivity processing
+                const viz = audioData ? visualizeAudio({ fps, frame, audioData, numberOfSamples: 64 }) : [];
+                const bassEnergy = viz.length > 0 ? (viz[0] + viz[1] + viz[2]) / 3 : 0;
+                const smoothedBass = interpolate(bassEnergy, [0.05, 0.4], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+                
+                const isKick = smoothedBass > 0.6;
+                const jitterY = isKick ? (random(`jitterY-${frame}`) * 4 - 2) : 0;
+                const rgbShift = interpolate(smoothedBass, [0.3, 1], [0, 8], { extrapolateLeft: 'clamp' });
+                const zoom = interpolate(smoothedBass, [0, 1], [1.02, 1.06]);
+                
+                const chunk = Math.floor(frame / 6); 
+                const shouldSpawnGlitch = random(`glitch-spawn-${chunk}`) > 0.6 && smoothedBass > 0.25; 
+                const glitchY = random(`glitch-y-${chunk}`) * 100; 
+                const glitchHeight = 10 + random(`glitch-h-${chunk}`) * 30; 
 
                 return (
                     <AbsoluteFill style={{ zIndex: 0 }}>
-                        <div style={{ ...baseStyle, filter: baseFilter, transform: `translateY(${baseYShift}px)` }}>
-                            <Img src={imgUrl} style={{
-                                ...baseStyle,
-                                transform: isGridActive ? `translate(0px, ${(random(`g-yshift-${frame}`) - 0.5) * 10}px)` : 'none'
+                        {/* Background with Jitter and Zoom */}
+                        <div style={{ 
+                            position: 'absolute', width: '100%', height: '100%', 
+                            filter: 'contrast(1.3) saturate(0.9) brightness(0.85)', 
+                            transform: `translateY(${jitterY}px) scale(${zoom})`,
+                            transformOrigin: 'center center'
+                        }}>
+                            <Img src={imgUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            
+                            {/* Chromatic Aberration Red/Cyan */}
+                            <Img src={imgUrl} style={{ 
+                                position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', 
+                                objectFit: 'cover', opacity: 0.5, mixBlendMode: 'screen', 
+                                filter: 'hue-rotate(-45deg)', transform: `translateX(${rgbShift}px)` 
                             }} />
-                            {(isTearing || enableRGBBreathing) && (
-                                <>
-                                    <Img src={imgUrl} style={{
-                                        ...baseStyle, mixBlendMode: 'screen',
-                                        transform: isTearing ? `translateX(${Math.random() * 10 + 5}px)` : `translateX(${rgbBreathSplit}px)`,
-                                        opacity: isTearing ? 0.5 : 0.4,
-                                        filter: 'drop-shadow(0 0 0 red)'
-                                    }} />
-                                    <Img src={imgUrl} style={{
-                                        ...baseStyle, mixBlendMode: 'screen',
-                                        transform: isTearing ? `translateX(${-(Math.random() * 10 + 5)}px)` : `translateX(${-rgbBreathSplit}px)`,
-                                        opacity: isTearing ? 0.5 : 0.4,
-                                        filter: 'drop-shadow(0 0 0 cyan)'
-                                    }} />
-                                </>
-                            )}
+                            <Img src={imgUrl} style={{ 
+                                position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', 
+                                objectFit: 'cover', opacity: 0.5, mixBlendMode: 'screen', 
+                                filter: 'hue-rotate(45deg)', transform: `translateX(${-rgbShift}px)` 
+                            }} />
                         </div>
 
-                        {blocks.map(b => {
-                            const clipPath = `polygon(${b.x}% ${b.y}%, ${b.x + b.w}% ${b.y}%, ${b.x + b.w}% ${b.y + b.h}%, ${b.x}% ${b.y + b.h}%)`;
-                            if (b.type === 'color') return (
-                                <div key={b.id} style={{
-                                    position: 'absolute', width: '100%', height: '100%',
-                                    clipPath, backgroundColor: b.color,
-                                    mixBlendMode: 'difference', opacity: 0.8,
-                                }} />
-                            );
-                            if (b.type === 'invert') return (
-                                <Img key={b.id} src={imgUrl} style={{ ...baseStyle, clipPath, filter: 'invert(100%) hue-rotate(90deg)' }} />
-                            );
-                            if (b.type === 'displace') return (
-                                <div key={b.id} style={{ position: 'absolute', width: '100%', height: '100%', clipPath, overflow: 'hidden' }}>
-                                    <Img src={imgUrl} style={{
-                                        ...baseStyle,
-                                        transform: `translate(${b.offsetX}px, ${b.offsetY}px) scale(1.1)`,
-                                        filter: 'saturate(200%) contrast(150%)'
-                                    }} />
-                                </div>
-                            );
-                            return null;
-                        })}
-
-                        {isGridActive && (
-                            <AbsoluteFill style={{
-                                mixBlendMode: 'screen', opacity: 0.45,
-                                transform: `translate(${frameData.gridJitterX}px, ${frameData.gridJitterY}px)`,
-                                pointerEvents: 'none',
-                                filter: 'contrast(350%) grayscale(100%) blur(0.8px)',
-                                backgroundImage: `
-                                    repeating-radial-gradient(ellipse at center, rgba(0,0,0,0.8), rgba(255,255,255,0.4) 1px, rgba(0,0,0,0.8) 3px),
-                                    repeating-linear-gradient(0deg, rgba(255,255,255,0.3) 0px, transparent 2px, transparent 6px)
-                                `,
-                                backgroundSize: '14px 14px, 100% 6px',
-                            }}>
-                                <svg width="100%" height="100%">
-                                    <filter id="staticNoiseGrid">
-                                        <feTurbulence type="fractalNoise" baseFrequency="0.4" numOctaves={2} stitchTiles="stitch" result="noise" />
-                                        <feColorMatrix type="matrix" values="1 0 0 0 0, 1 0 0 0 0, 1 0 0 0 0, 0 0 0 1.2 0" in="noise" result="coloredNoise" />
-                                        <feComposite operator="in" in="coloredNoise" in2="SourceGraphic" />
-                                    </filter>
-                                    <rect width="100%" height="100%" fill="#fff" filter="url(#staticNoiseGrid)" />
-                                </svg>
-                            </AbsoluteFill>
-                        )}
-
-                        {isTrackingRoll && (
-                            <div style={{
-                                position: 'absolute', left: 0,
-                                top: `${frameData.trackingRollOffset}%`,
-                                width: '100%', height: '25%',
-                                backdropFilter: 'blur(4px) hue-rotate(90deg) contrast(150%)',
-                                opacity: 0.8,
-                                transform: `translateX(${(random(`g-tr-${frame}`) - 0.5) * 15}px)`,
-                                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                                mixBlendMode: 'hard-light',
-                                borderTop: '2px solid rgba(255, 255, 255, 0.2)',
-                                borderBottom: '2px solid rgba(255, 255, 255, 0.2)',
-                                pointerEvents: 'none', zIndex: 10,
+                        {/* Tracking Line Glitch */}
+                        {shouldSpawnGlitch && (
+                            <div style={{ 
+                                position: 'absolute', top: `${glitchY}%`, left: 0, width: '100%', height: `${glitchHeight}px`, 
+                                background: 'rgba(255, 255, 255, 0.15)', backdropFilter: 'blur(8px) contrast(3.0) brightness(1.2)', 
+                                mixBlendMode: 'overlay', zIndex: 10, transform: `translateX(${random(`drift-${frame}`) * 80 - 40}px)` 
                             }} />
                         )}
 
@@ -694,26 +623,29 @@ const VinylStreamOverlay: React.FC<VinylStreamOverlayProps> = ({ job = NOOP_JOB 
                 }} />
             </div>
 
-            {/* ── Promo Popup ─────────────────────────────────────────────────────── */}
-            {promoCfg?.enabled && (
-                <PromoPopup
-                    text={promoCfg.text || 'Listen on Spotify'}
-                    iconSrc={promoCfg.icon ? (getAssetUrl(promoCfg.icon) ?? '') : ''}
-                    cycleSeconds={promoCfg.cycleSeconds || 40}
-                    offsetSeconds={promoCfg.offsetSeconds || 0}
-                    holdSeconds={promoCfg.holdSeconds || 4}
-                />
-            )}
+            {/* ── UI Layer: Promo Popup & VCR (Foreground) ─────────────────────────── */}
+            <AbsoluteFill style={{ zIndex: 3000, pointerEvents: 'none' }}>
+                {/* ── Promo Popup ─────────────────────────────────────────────────────── */}
+                {promoCfg?.enabled && (
+                    <PromoPopup
+                        text={promoCfg.text || 'Listen on Spotify'}
+                        iconSrc={promoCfg.icon ? (getAssetUrl(promoCfg.icon) ?? '') : ''}
+                        cycleSeconds={promoCfg.cycleSeconds || 40}
+                        offsetSeconds={promoCfg.offsetSeconds || 0}
+                        holdSeconds={promoCfg.holdSeconds || 4}
+                    />
+                )}
 
-            {/* ── VCR Prompt ──────────────────────────────────────────────────────── */}
-            {vcrCfg?.enabled && (
-                <VCRPrompt
-                    text={vcrCfg.text || '> FOLLOW US_'}
-                    cycleSeconds={vcrCfg.cycleSeconds || 40}
-                    offsetSeconds={vcrCfg.offsetSeconds || 20}
-                    holdSeconds={vcrCfg.holdSeconds || 5}
-                />
-            )}
+                {/* ── VCR Prompt ──────────────────────────────────────────────────────── */}
+                {vcrCfg?.enabled && (
+                    <VCRPrompt
+                        text={vcrCfg.text || '> FOLLOW US_'}
+                        cycleSeconds={vcrCfg.cycleSeconds || 40}
+                        offsetSeconds={vcrCfg.offsetSeconds || 20}
+                        holdSeconds={vcrCfg.holdSeconds || 5}
+                    />
+                )}
+            </AbsoluteFill>
 
             {/* ── CRT Vignette + Scanlines ────────────────────────────────────────── */}
             {glitchCfg?.enableCRTVignette !== false && (
@@ -732,4 +664,4 @@ const VinylStreamOverlay: React.FC<VinylStreamOverlayProps> = ({ job = NOOP_JOB 
     );
 };
 
-export default VinylStreamOverlay;
+export default EtherAmbient;

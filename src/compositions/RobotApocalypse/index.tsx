@@ -360,7 +360,7 @@ const GiantRobot: React.FC<{ bass: number; frame: number }> = ({ bass, frame }) 
 export const RobotApocalypse: React.FC = () => {
     const frame = useCurrentFrame();
     const { fps, width, height } = useVideoConfig();
-    const audioFile = staticFile('track.mp3');
+    const audioFile = staticFile('audio/track.mp3');
     const audioData = useAudioData(audioFile);
 
     if (!audioData) return <AbsoluteFill style={{ background: '#06040e' }} />;
