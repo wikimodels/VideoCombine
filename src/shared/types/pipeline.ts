@@ -82,11 +82,34 @@ export interface NeonAuraConfig {
   y?: string;
 }
 
+export interface ParallaxConfig {
+  /** Path relative to public/ — the holographic 3D subject */
+  graphic?: string;
+  baseColor?: string;
+  accentColor?: string;
+  /** Max rotateX (degrees) on bass drop. Default: 12 */
+  rotateXMax?: number;
+  /** Passive Y-axis drift amplitude (degrees). Default: 6 */
+  rotateYAmplitude?: number;
+  /** Max translateZ (px) toward viewer on highs. Default: 60 */
+  translateZMax?: number;
+  /** Max RGB chromatic aberration spread (px) on kick. Default: 6 */
+  aberrationMax?: number;
+  /** Show holographic laser scan line. Default: true */
+  scanLine?: boolean;
+  /** Holographic decorative frame settings */
+  frame?: {
+    enabled?: boolean;
+    color?: string;
+    rotationMultiplier?: number;
+  };
+}
+
 export interface RenderJob {
   /** Unique ID → composition name in Remotion Studio + output filename */
   id: string;
   /** Which composition template to use */
-  composition: 'VinylStreamOverlay' | 'EtherAmbient' | 'LiquidCrystalScene' | 'NeonAuraScene';
+  composition: 'VinylStreamOverlay' | 'EtherAmbient' | 'LiquidCrystalScene' | 'NeonAuraScene' | 'HolographicParallaxScene' | 'ObjectParallaxScene';
   /** Video format: 'landscape' (1920x1080) or 'portrait' (1080x1920). Defaults to landscape. */
   format?: 'landscape' | 'portrait';
   /** Duration override in seconds. If omitted, auto-detected from audio length */
@@ -114,4 +137,6 @@ export interface RenderJob {
   vcr?: VCRConfig;
   glitch?: GlitchConfig;
   neonAura?: NeonAuraConfig;
+  parallax?: ParallaxConfig;
 }
+

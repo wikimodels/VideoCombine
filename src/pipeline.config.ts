@@ -344,4 +344,102 @@ export const renders: RenderJob[] = [
       accentColor: '#ff00ff',
     },
   },
+
+  // ── Holographic Parallax Demo ─────────────────────────────────────────────
+  {
+    id: 'holographic-test',
+    composition: 'HolographicParallaxScene',
+    audio: 'audio/track.mp3',
+    originGraphic: 'icons/soldier_4.svg', // Target for hue-rotate
+    originScale: 1.5,
+    originBgColor: 'red',
+    vinylSizePercent: 50,
+    particleGraphic: 'icons/skull.svg',
+    particles: {
+      colors: ['#00ffff', '#ff00ff', '#ffffff'],
+      speed: 1,
+      maxHeight: 0.8,
+      spreadAmplitude: 2.5,
+    },
+    parallax: {
+      graphic: 'icons/sniper_city_1.svg',
+      baseColor: '#00ffff',
+      accentColor: '#ff00ff',
+      rotateXMax: 14,
+      rotateYAmplitude: 7,
+      translateZMax: 70,
+      aberrationMax: 8,
+      scanLine: true,
+      frame: {
+        enabled: true,
+        color: '#00ffff',
+        rotationMultiplier: 2.5, // Lowered for better stability (less "flying" corners)
+      }
+    },
+    eq: {
+      enabled: true,
+      bands: 64,
+      color: '#00ffff',
+      secondaryColor: '#ff00ff',
+      barWidth: 7,
+      roundBars: true,
+      reflex: true,
+      reflexAlpha: 0.2,
+      heightCurve: 1.4,
+    },
+    promo: {
+      enabled: true,
+      text: 'LISTEN ON SPOTIFY',
+      icon: 'icons/spotify.svg',
+      cycleSeconds: 45,
+      offsetSeconds: 0,
+      holdSeconds: 5,
+    },
+    vcr: {
+      enabled: true,
+      text: '> HOLOGRAM_DRIFT_',
+      cycleSeconds: 45,
+      offsetSeconds: 22,
+      holdSeconds: 5,
+    },
+  },
+  {
+    id: 'object-parallax-test',
+    composition: 'ObjectParallaxScene',
+    audio: 'audio/track.mp3',
+    originGraphic: 'icons/soldier_4.svg', // Target for hue-rotate
+    vinylSizePercent: 50,
+    particleGraphic: 'icons/skull.svg',
+    particles: {
+      colors: ['#00ffff', '#ff00ff', '#ffffff'],
+      speed: 1.5,
+    },
+    eq: {
+      enabled: true,
+      bands: 64,
+      color: '#00ffff',
+      secondaryColor: '#ff00ff',
+      barWidth: 10,
+    },
+    promo: {
+      enabled: true,
+      text: 'LISTEN ON SPOTIFY',
+      icon: 'icons/spotify.svg',
+      cycleSeconds: 8,
+    },
+    vcr: {
+      enabled: true,
+      text: '> HOLOGRAM_DRIFT_',
+      cycleSeconds: 10,
+    },
+    parallax: {
+      graphic: 'icons/soldier_mp4_2.svg',
+      baseColor: '#00ffff',
+      accentColor: '#ff00ff',
+      rotateXMax: 18,
+      translateZMax: 80,
+      aberrationMax: 10,
+      scanLine: true,
+    }
+  }
 ];

@@ -30,6 +30,8 @@ import LucidDriftOS from './compositions/LucidDriftOS';
 import LucidConfig from './compositions/LucidDriftOS/config.json';
 import LiquidCrystalScene from './compositions/LiquidCrystalScene';
 import NeonAuraScene from './compositions/NeonAuraScene';
+import HolographicParallaxScene from './compositions/HolographicParallaxScene';
+import { ObjectParallaxScene } from './compositions/ObjectParallaxScene';
 
 // ── Pipeline ─────────────────────────────────────────────────────────────────
 import { renders } from './pipeline.config';
@@ -38,9 +40,14 @@ import type { RenderJob } from './shared/types/pipeline';
 const FPS = 30;
 
 const calculateLucidDuration = async () => {
-  const assetUrl = require(`./assets/${LucidConfig.audioTrack.src}`);
-  const durationSec = await getAudioDurationInSeconds(typeof assetUrl === 'string' ? assetUrl : assetUrl.default);
-  return { durationInFrames: Math.ceil(durationSec * FPS) };
+  try {
+    // Attempting to resolve via staticFile to avoid Webpack module resolution crash on missing ./assets directory
+    const url = staticFile(`audio/${LucidConfig.audioTrack.src}`);
+    const durationSec = await getAudioDurationInSeconds(url);
+    return { durationInFrames: Math.ceil(durationSec * FPS) };
+  } catch (err) {
+    return { durationInFrames: 300 };
+  }
 };
 
 /** Auto-detect duration from audio track in public/ */
@@ -131,6 +138,8 @@ export const RemotionRoot: React.FC = () => (
             job.composition === 'VinylStreamOverlay' ? VinylStreamOverlay :
             job.composition === 'LiquidCrystalScene' ? LiquidCrystalScene :
             job.composition === 'NeonAuraScene' ? NeonAuraScene :
+            job.composition === 'HolographicParallaxScene' ? HolographicParallaxScene :
+            job.composition === 'ObjectParallaxScene' ? ObjectParallaxScene :
             EtherAmbient
           }
           defaultProps={{ job }}

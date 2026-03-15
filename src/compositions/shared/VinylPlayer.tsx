@@ -44,7 +44,7 @@ export const VinylPlayer: React.FC<VinylPlayerProps> = ({
                 ) : vinylSrc === 'skull' ? (
                     <SkullGraphic />
                 ) : getAssetUrl ? (
-                    <Img src={getAssetUrl(vinylSrc)} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    <Img src={getAssetUrl(vinylSrc) || ''} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 ) : (
                     <DefaultVinyl />
                 )}

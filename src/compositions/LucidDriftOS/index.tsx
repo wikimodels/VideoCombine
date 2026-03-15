@@ -14,7 +14,7 @@ import cfg from './config.json';
 
 const LucidDriftOS: React.FC = () => {
     const frame = useCurrentFrame();
-    const { fps, width, height } = useVideoConfig();
+    // const { fps, width, height } = useVideoConfig(); // Unused for now
 
     const audioUrl = cfg.audioTrack ? getAssetUrl(cfg.audioTrack.src) : null;
     const { engine } = useAudioEngine(audioUrl || '', cfg);

@@ -2,6 +2,7 @@
     "overlay": {
         "background": "#E8E4D9",
         "vinylSize": 300,
+        "vinylSrc": "default",
         "originBgColor": "#1a1a1a",
         "originScale": 0.85,
         "particleSrc": "crosshair.svg",
